@@ -5,6 +5,9 @@
         <div class="eyebrow">
           <span class="eyebrow-dot" aria-hidden="true"></span>
           Workforce Planning Reports
+          <span class="mode-badge" :class="`mode-badge--${mode}`">
+            {{ mode === 'keyword' ? 'Keyword search' : 'Semantic search' }}
+          </span>
         </div>
         <h1>Find the data item you need. Fast.</h1>
         <p class="lede">
@@ -62,6 +65,7 @@ import DataItemHighlight from '../components/DataItemHighlight.vue';
 import corpus from '../../test-harness/data/corpus.json';
 
 const store = useStore();
+const mode = computed(() => store.state.search.mode);
 
 const suggestions = [
   'Primary care doctor staffing levels',
@@ -158,6 +162,29 @@ html, body {
   letter-spacing: 0.14em;
   color: var(--muted);
   margin-bottom: 0.85rem;
+}
+
+.mode-badge {
+  margin-left: 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  text-transform: uppercase;
+}
+
+.mode-badge--semantic {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  color: var(--accent);
+}
+
+.mode-badge--keyword {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
 }
 
 .eyebrow-dot {
