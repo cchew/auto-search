@@ -1,0 +1,18 @@
+.DS_Store
+.idea/
+.venv/
+.vscode/
+*.env
+*.iml
+*.log
+*.pyc
+__pycache__/
+.pytest_cache/
+backend/src/main/resources/embeddings/
+backend/src/main/resources/model/
+backend/target/
+fine-tuning/data/
+fine-tuning/output/
+frontend/dist/
+node_modules/
+# test-harness/results/ — unignored; evaluation reports committed as artefacts
