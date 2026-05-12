@@ -1,16 +1,10 @@
 # Auto Search
 
-Semantic search for structured data item catalogues. Users type a natural-language query; the app finds the best-matching item across all report sets and navigates directly to it.
+Semantic search for structured data item catalogues. Type a natural-language query; jump straight to the matching item across any report set.
 
----
+A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on a 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
 
-## Status
-
-| Stage | Status |
-|---|---|
-| Design spec | Complete |
-| Demo / POC | Complete |
-| Production | Pending demo outcome |
+![Search dropdown](docs/search-dropdown.png)
 
 ---
 
@@ -65,9 +59,9 @@ A manifest (`manifest.json`) stores a content hash per item: `sha256(wpp_id + it
 
 ---
 
-## Quick Start (Demo / POC)
+## Quick Start
 
-**Prerequisite:** `ANTHROPIC_API_KEY` environment variable. No AWS or Terraform needed.
+End-to-end run on the bundled reference corpus. **Prerequisite:** `ANTHROPIC_API_KEY` environment variable. No AWS or Terraform needed.
 
 ```bash
 # Set up Python venv (Python 3.9+)
@@ -125,7 +119,7 @@ cd frontend && npm install && npm run dev
 | `name` | Yes | Display name. Used for embedding. |
 | `description` | Recommended | Significantly improves recall. Empty string if unavailable. |
 
-A seed corpus of ~350 synthetic items (health workforce planning concepts) is bundled in `test-harness/data/corpus.json` for the demo run. To adapt to a different domain, replace `corpus.json` and re-run the pipeline.
+A reference corpus of ~350 synthetic items (health workforce planning concepts) ships in `test-harness/data/corpus.json`. To adapt to a different domain, replace it and re-run the pipeline — see [Using your own corpus](#using-your-own-corpus).
 
 ---
 
@@ -156,6 +150,16 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 | No external vector DB | 350 items fits trivially in JVM memory; removes operational dependency |
 | `--local` flag on all pipeline scripts | Full end-to-end proof with only `ANTHROPIC_API_KEY`; no AWS until production |
 | `minScore = 0.3` confidence threshold | Suppresses low-confidence results rather than returning misleading matches |
+
+---
+
+## Using your own corpus
+
+1. Replace `test-harness/data/corpus.json` with your items (same schema — see [Corpus format](#corpus-format)).
+2. Optionally swap `test-harness/data/test-queries.json` for a curated holdout of real queries from your domain. This is the go/no-go signal; synthetic queries alone measure memorisation.
+3. Re-run steps 1–5 from [Quick Start](#quick-start). The pipeline is delta-aware — only new or changed items get re-embedded.
+
+The Java and Vue layers are domain-agnostic. Only the corpus, queries, and `wpp_id`-to-route mapping in the frontend need to change.
 
 ---
 
