@@ -1,0 +1,6 @@
+anthropic==0.97.0
+numpy==1.26.4
+optimum[onnxruntime]==1.19.1
+python-dotenv==1.0.1
+pytest==8.2.0
+sentence-transformers==2.7.0

@@ -1,0 +1,22 @@
+[
+  {"query": "GP full time equivalent",             "expected_item_id": 1},
+  {"query": "how many GP FTE",                     "expected_item_id": 1},
+  {"query": "general practitioner hours worked",   "expected_item_id": 1},
+  {"query": "total number of GPs",                 "expected_item_id": 2},
+  {"query": "doctor headcount",                    "expected_item_id": 2},
+  {"query": "bulk billing proportion",             "expected_item_id": 3},
+  {"query": "Medicare direct billing rate",        "expected_item_id": 3},
+  {"query": "GPs per thousand population",         "expected_item_id": 4},
+  {"query": "registered nurse full time equivalent","expected_item_id": 7},
+  {"query": "RN FTE",                              "expected_item_id": 7},
+  {"query": "nursing unfilled positions",          "expected_item_id": 10},
+  {"query": "nurse vacancy rate",                  "expected_item_id": 10},
+  {"query": "modified monash remoteness category", "expected_item_id": 19},
+  {"query": "MMM category",                        "expected_item_id": 19},
+  {"query": "primary health network boundary",     "expected_item_id": 20},
+  {"query": "DPA area GP restriction",             "expected_item_id": 22},
+  {"query": "distribution priority area",          "expected_item_id": 22},
+  {"query": "GP registrar training program",       "expected_item_id": 28},
+  {"query": "international medical graduate registration","expected_item_id": 29},
+  {"query": "telehealth consultation proportion",  "expected_item_id": 25}
+]
