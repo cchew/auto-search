@@ -1,0 +1,24 @@
+C4Component
+    title Runtime — Auto Search inside the Spring Boot app
+
+    Person(user, "WPP user", "Searches by intent, not exact name")
+
+    System_Boundary(spa, "Vue 3 SPA") {
+        Component(searchbar, "SearchBar", "Vue 3", "Debounced input, min 3 chars")
+        Component(highlight, "DataItemHighlight", "Vue 3", "Scrolls and fades the matched item")
+    }
+
+    System_Boundary(jvm, "Spring Boot (single JVM)") {
+        Component(api, "SearchController", "Spring REST", "POST /api/v1/search")
+        Component(embed, "EmbeddingService", "ONNX Runtime", "Fine-tuned MiniLM, INT8")
+        Component(sim, "SimilarityService", "Java", "In-memory cosine over 350 vectors")
+    }
+
+    Rel(user, searchbar, "Types query")
+    Rel(searchbar, api, "JSON over HTTPS")
+    Rel(api, embed, "embed(query)")
+    Rel(api, sim, "search(vector, topK=5)")
+    Rel(api, searchbar, "Top-K results")
+    Rel(searchbar, highlight, "Navigate ?highlight=itemId")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

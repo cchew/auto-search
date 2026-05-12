@@ -1,0 +1,9 @@
+graph TD
+    A["LIKE '%foo%'<br/>Catches: substrings<br/>Misses: typos, synonyms"] --> B["Keyword index<br/>Catches: tokens, stems<br/>Misses: synonyms, acronyms"]
+    B --> C["OpenSearch + analysers + synonyms<br/>Catches: curated synonyms<br/>Misses: anything you didn't curate"]
+    C --> D["Semantic embeddings<br/>Catches: meaning, not tokens<br/>Misses: domain vocab without fine-tuning"]
+
+    style A fill:#f4f4f4,stroke:#888
+    style B fill:#f4f4f4,stroke:#888
+    style C fill:#f4f4f4,stroke:#888
+    style D fill:#e8f1ff,stroke:#0066cc,stroke-width:2px
