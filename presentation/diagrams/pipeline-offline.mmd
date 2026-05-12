@@ -1,0 +1,9 @@
+graph LR
+    A[corpus.json] --> B[generate_pairs.py<br/>Claude API]
+    B --> C[train.py<br/>fine-tune MiniLM]
+    C --> D[export_onnx.py<br/>INT8 quantise]
+    D --> E[precompute_embeddings.py<br/>delta-aware]
+    E --> F[(S3<br/>model + vectors)]
+
+    style A fill:#f4f4f4,stroke:#888
+    style F fill:#e8f1ff,stroke:#0066cc,stroke-width:2px
