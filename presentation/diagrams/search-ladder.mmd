@@ -1,7 +1,8 @@
-graph TD
-    A["LIKE '%foo%'<br/>Catches: substrings<br/>Misses: typos, synonyms"] --> B["Keyword index<br/>Catches: tokens, stems<br/>Misses: synonyms, acronyms"]
-    B --> C["OpenSearch + analysers + synonyms<br/>Catches: curated synonyms<br/>Misses: anything you didn't curate"]
-    C --> D["Semantic embeddings<br/>Catches: meaning, not tokens<br/>Misses: domain vocab without fine-tuning"]
+%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 60, 'rankSpacing': 50}}}%%
+graph BT
+    A["<div style='min-width:340px;padding:4px 8px'>LIKE '%foo%'<br/>Catches: substrings<br/>Misses: typos, synonyms</div>"] --> B["<div style='min-width:340px;padding:4px 8px'>Keyword index<br/>Catches: tokens, stems<br/>Misses: synonyms, acronyms</div>"]
+    B --> C["<div style='min-width:340px;padding:4px 8px'>OpenSearch + analysers + synonyms<br/>Catches: curated synonyms<br/>Misses: anything you didn't curate</div>"]
+    C --> D["<div style='min-width:340px;padding:4px 8px'>Semantic embeddings<br/>Catches: meaning, not tokens<br/>Misses: domain vocab without fine-tuning</div>"]
 
     style A fill:#f4f4f4,stroke:#888
     style B fill:#f4f4f4,stroke:#888

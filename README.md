@@ -144,7 +144,7 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 | Fine-tuned ONNX in JVM over Bedrock at runtime | Zero query latency, no per-query cost, self-contained |
 | `all-MiniLM-L6-v2` as base model | 22M params, runs on CPU, strong sentence retrieval baseline, ONNX-exportable |
 | Synthetic pairs via Claude API | No labeled data; LLM-generated query variations are a well-established substitute |
-| Two holdout sets (curated + synthetic) | Prevents measuring memorisation; curated set is the go/no-go signal |
+| Two synthetic test sets with different phrasing distributions | The LLM holdout measures memorisation; a smaller secondary set with shorter, keyword-style queries measures generalisation beyond the training pairs' verbose conversational style. Real-user query logs are a follow-up |
 | Delta-aware pipeline | Avoids regenerating pairs for unchanged items |
 | `corpus.json` provided externally | Decouples pipeline from source DB; any team can supply the file |
 | No external vector DB | 350 items fits trivially in JVM memory; removes operational dependency |
@@ -156,7 +156,7 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 ## Using your own corpus
 
 1. Replace `test-harness/data/corpus.json` with your items (same schema — see [Corpus format](#corpus-format)).
-2. Optionally swap `test-harness/data/test-queries.json` for a curated holdout of real queries from your domain. This is the go/no-go signal; synthetic queries alone measure memorisation.
+2. Optionally swap `test-harness/data/test-queries.json` for queries from your own domain. The included file is a small synthetic set used as a stand-in; real-user query logs (once they exist) are the strongest evaluation signal.
 3. Re-run steps 1–5 from [Quick Start](#quick-start). The pipeline is delta-aware — only new or changed items get re-embedded.
 
 The Java and Vue layers are domain-agnostic. Only the corpus, queries, and `wpp_id`-to-route mapping in the frontend need to change.
