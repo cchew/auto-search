@@ -209,7 +209,7 @@ section.appendix h2 {
 # Search by Intent, Not by Name
 
 <br/>
-Semantic search inside a Spring Boot app. No vector DB. No per-query model cost.
+Semantic search inside a Java app.
 
 Ching Chew · May 2026
 
@@ -230,7 +230,7 @@ Today we'll look at the rung of the search ladder above OpenSearch. Why it works
 
 ## The Naming Problem
 
-A Workforce Planning Reports user wants to find "how many GPs we have."
+A report user wants to find "how many GPs we have."
 
 - The data item is called "GP FTE"
 - Or "Total practitioner FTE"
@@ -260,7 +260,7 @@ Full-bleed split. No narration.
 
 ## The Search Ladder
 
-![w:900](diagrams/search-ladder.svg)
+![w:300](diagrams/search-ladder.svg)
 
 Each rung buys recall. None solve vocabulary mismatch.
 
@@ -295,7 +295,7 @@ Three phrasings. Zero shared tokens. Same answer. That's the point.
 
 ## The Vocabulary Problem
 
-![w:800](diagrams/vocabulary-problem.svg)
+![w:550](diagrams/vocabulary-problem.svg)
 
 Off-the-shelf embeddings know "doctor" ≈ "physician".
 
@@ -310,14 +310,14 @@ OOTB MiniLM: Recall@1 = 0.75
 OOTB bge-small (larger): Recall@1 = 0.80
 Both miss one query in five. Misses cluster on domain phrasings — exactly the queries that matter most.
 
-Fine-tuning teaches it the words your users actually use.
+Fine-tuning teaches it the domain vocabulary.
 -->
 
 ---
 
 ## Synthetic Pairs from Claude
 
-No labelled query logs for a feature that does not exist yet.
+No human labelled "golden dataset" so we generate them from an LLM.
 
 ```python
 prompt = (
@@ -329,21 +329,21 @@ prompt = (
 )
 ```
 
-10 queries x 350 items = 3,500 pairs. ~30c on Haiku.
+~5,900 pairs across 350 items (re-runs accumulate). ~30c on Haiku.
 
 <!-- note:
 The unglamorous bit that made it work.
 
 Loss function: MultipleNegativesRankingLoss — every other item in the batch acts as an implicit negative for any given query. Batch size 32, three epochs.
 
-The catch: it teaches the model to recognise Claude's phrasing patterns. The curated holdout (real user queries) is the only number worth quoting externally.
+The catch: it teaches the model to recognise Claude's phrasing patterns. Real human query logs are a follow-up once the feature is live.
 -->
 
 ---
 
 ## Architecture
 
-![w:1000](diagrams/runtime-flow.svg)
+![w:1200](diagrams/runtime-flow.svg)
 
 C4 component view. ONNX model and vectors load once on app startup.
 
@@ -352,21 +352,23 @@ For the room: this is a single Spring Boot JAR. Not a microservice. Not a vector
 
 Offline pipeline runs separately — Python, sentence-transformers, exports ONNX, precomputes embeddings, drops them in S3. App pulls them on startup.
 
-Search latency end-to-end: ~5ms on a laptop.
+Server-side embed + similarity: ~5ms on a laptop (excludes Vue debounce, network, DOM render).
 -->
 
 ---
 
 ## Why ONNX in the JVM, not Bedrock
 
+We can use something like Bedrock directly, but:
+
 | | Bedrock per query | ONNX in JVM |
 |---|---|---|
-| Latency | 100–300 ms | ~5 ms |
+| Per-query call (typical) | ~50 ms | ~5 ms |
 | Per-query cost | Yes | No |
 | Network dependency | Yes | None after startup |
 | Deployment surface | +1 service | Same JAR |
 
-For Ctrl-F-feel UX, latency alone settles it.
+<span style="font-size:0.8em;color:#666">Bedrock = API round-trip; ONNX = in-process inference. The gap is the network, which is the point.</span>
 
 <!-- note:
 Bedrock is the obvious naive option. It works. It's also one network hop and a per-query bill on every keystroke after the debounce.
@@ -417,10 +419,11 @@ Day the corpus crosses ~50k items, this stops fitting a request budget. That's w
 | bge-small-en-v1.5 (OOTB, larger) | 0.800 | 0.850 |
 | **all-MiniLM-L6-v2 fine-tuned (INT8 ONNX)** | **0.850** | **0.908** |
 
-+10pp Recall@1. Smaller, faster, more accurate.
+Roughly +5pp Recall@1 over the best OOTB baseline (+10pp over the same MiniLM base). 
+Smaller, faster, more accurate — directional only, n=20.
 
 <!-- note:
-Two holdouts: synthetic (0.93) and curated (0.85). The gap is what the model learned about Claude's phrasing vs real user phrasing. Curated is the go/no-go.
+Two test sets, both synthetic. LLM holdout (0.93) vs a smaller secondary set (0.85) with shorter, keyword-style queries. The gap is what the model learned about Claude's verbose phrasing vs terser phrasings. Logged queries from a live deployment would be the strongest signal but don't exist yet.
 
 Fine-tuned beats the larger OOTB baseline. Domain knowledge > model size at this scale.
 
@@ -431,8 +434,8 @@ Recall@1 = 0.85 means 1 in 7 queries miss the top hit. Top-5 dropdown surfaces n
 
 ## Lessons Learnt
 
-- **Threshold tuning matters more than the model** — `minScore = 0.3` set by eyeballing the curated holdout
-- **Synthetic holdout overstates performance** — curated set is the only number worth quoting
+- **Threshold tuning matters more than the model** — `minScore = 0.3` set by eyeballing results
+- **LLM holdout overstates performance** — weaker secondary set results; real-user logs are still a follow-up
 - **Batch size affects retrieval training** — `MultipleNegativesRankingLoss` needs ≥32 to converge cleanly
 - **Embeddings are not free RAM** — 50k items = 75 MB before indexing
 
@@ -441,7 +444,7 @@ Honest about where the seams are.
 
 Threshold revisits any time the model or corpus shifts. There's no clever way around this — eyeball the score distribution.
 
-The synthetic/curated gap is the single most important number to track. If it widens, the synthetic data has drifted from reality.
+The gap between the two synthetic sets is the most important number to track. If it widens, the LLM holdout is over-fitted to Claude's style.
 -->
 
 ---
@@ -451,7 +454,7 @@ The synthetic/curated gap is the single most important number to track. If it wi
 - **Scale** — HNSW or FAISS when corpus crosses ~50k items
 - **Generality** — `corpus.json` is the only input; any structured catalogue plugs in
 - **Hybrid retrieval** — BM25 + semantic with score fusion for codes/IDs
-- **Online learning** — logged queries with clicks become real labelled data; synthetic scaffold comes down
+- **Online learning** — logged queries with clicks become real labelled data
 
 <br/>
 
@@ -501,7 +504,7 @@ Open Q&A. Likely questions:
 
 **Model lifecycle**
 - Version-pin the ONNX file; ship it with the deployment artifact
-- Re-fine-tune when curated Recall@1 drops below threshold
+- Re-fine-tune when test set accuracy drops below an acceptable level
 - Manifest-driven incremental embeddings — only changed items re-embed
 
 **Ops surface**
@@ -511,7 +514,7 @@ Open Q&A. Likely questions:
 
 **Above OFFICIAL data**
 - Same code, self-hosted training (no Claude API for synthetic pairs)
-- Or hand-curate pairs against a smaller seed corpus
+- Or manually author pairs against a smaller seed corpus
 
 <!-- note:
 Cover only if asked. The governance story is short because the runtime has no external dependencies.
@@ -536,9 +539,7 @@ Cover only if asked. The governance story is short because the runtime has no ex
 - Jackson for vector serialisation
 
 **Frontend**
-- Vue 3 Composition API
-- Vuetify 3
-- Vue Router for highlight-on-navigate
+- Vue 3, Vuetify 3, Vue Router
 
 <!-- note:
 Tech stack on request. The Java side is intentionally boring — no Spring AI, no LangChain4j. ONNX Runtime + a tokenizer is the whole ML surface.

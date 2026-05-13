@@ -5,9 +5,13 @@ import corpus from '../../../test-harness/data/corpus.json';
 /** @typedef {{ wppId: number, itemId: number, itemName: string, score: number }} SearchResultItem */
 
 // Read ?mode=keyword from URL to demo the LIKE-style baseline alongside semantic.
+// Supports both regular query string and hash-routed query (e.g. /#/?mode=keyword).
 function readMode() {
   if (typeof window === 'undefined') return 'semantic';
-  const params = new URLSearchParams(window.location.search);
+  const search = (window.location.search || '').replace(/^\?/, '');
+  const hash = window.location.hash || '';
+  const hashQuery = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '';
+  const params = new URLSearchParams([search, hashQuery].filter(Boolean).join('&'));
   return params.get('mode') === 'keyword' ? 'keyword' : 'semantic';
 }
 

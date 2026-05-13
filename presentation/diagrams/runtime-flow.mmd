@@ -1,24 +1,30 @@
-C4Component
-    title Runtime — Auto Search inside the Spring Boot app
+%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 50, 'rankSpacing': 90, 'curve': 'basis'}}}%%
+flowchart LR
+    user(["<b>WPP user</b><br/><i>Searches by intent,<br/>not exact name</i>"])
 
-    Person(user, "WPP user", "Searches by intent, not exact name")
+    subgraph spa["Vue 3 SPA"]
+        direction TB
+        searchbar["<b>SearchBar</b><br/><i>Vue 3</i><br/>Debounced input,<br/>min 3 chars"]
+        highlight["<b>DataItemHighlight</b><br/><i>Vue 3</i><br/>Scrolls and fades<br/>the matched item"]
+    end
 
-    System_Boundary(spa, "Vue 3 SPA") {
-        Component(searchbar, "SearchBar", "Vue 3", "Debounced input, min 3 chars")
-        Component(highlight, "DataItemHighlight", "Vue 3", "Scrolls and fades the matched item")
-    }
+    subgraph jvm["Spring Boot (single JVM)"]
+        direction TB
+        api["<b>SearchController</b><br/><i>Spring REST</i><br/>POST /api/v1/search"]
+        embed["<b>EmbeddingService</b><br/><i>ONNX Runtime</i><br/>Fine-tuned MiniLM, INT8"]
+        sim["<b>SimilarityService</b><br/><i>Java</i><br/>In-memory cosine<br/>over 350 vectors"]
+    end
 
-    System_Boundary(jvm, "Spring Boot (single JVM)") {
-        Component(api, "SearchController", "Spring REST", "POST /api/v1/search")
-        Component(embed, "EmbeddingService", "ONNX Runtime", "Fine-tuned MiniLM, INT8")
-        Component(sim, "SimilarityService", "Java", "In-memory cosine over 350 vectors")
-    }
+    user -->|"Types query"| searchbar
+    searchbar -->|"JSON over HTTPS"| api
+    api -->|"embed(query)"| embed
+    api -->|"search(vector, topK=5)"| sim
+    api -.->|"Top-K results"| searchbar
+    searchbar -->|"Navigate ?highlight=itemId"| highlight
 
-    Rel(user, searchbar, "Types query")
-    Rel(searchbar, api, "JSON over HTTPS")
-    Rel(api, embed, "embed(query)")
-    Rel(api, sim, "search(vector, topK=5)")
-    Rel(api, searchbar, "Top-K results")
-    Rel(searchbar, highlight, "Navigate ?highlight=itemId")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    classDef person fill:#08427b,stroke:#073b6f,color:#fff
+    classDef component fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef boundary fill:none,stroke:#666,stroke-dasharray:5 5,color:#333
+    class user person
+    class searchbar,highlight,api,embed,sim component
+    class spa,jvm boundary
