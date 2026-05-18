@@ -6,18 +6,14 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-@Service
-public class EmbeddingService {
+public class EmbeddingService implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddingService.class);
 
@@ -25,10 +21,7 @@ public class EmbeddingService {
     private final OrtSession session;
     private final HuggingFaceTokenizer tokenizer;
 
-    public EmbeddingService(
-            @Value("${search.model.path}") String modelPath,
-            @Value("${search.tokenizer.path}") String tokenizerPath
-    ) throws OrtException, IOException {
+    public EmbeddingService(String modelPath, String tokenizerPath) throws OrtException, IOException {
         log.info("Loading ONNX model from {}", modelPath);
         this.env = OrtEnvironment.getEnvironment();
         this.session = env.createSession(modelPath, new OrtSession.SessionOptions());
@@ -41,7 +34,6 @@ public class EmbeddingService {
         long[] ids = enc.getIds();
         long[] mask = enc.getAttentionMask();
         long[] types = enc.getTypeIds();
-
         try (
             OnnxTensor idsTensor   = OnnxTensor.createTensor(env, new long[][]{ids});
             OnnxTensor maskTensor  = OnnxTensor.createTensor(env, new long[][]{mask});
@@ -67,7 +59,6 @@ public class EmbeddingService {
             for (int d = 0; d < dim; d++) pooled[d] += tokenEmbeddings[t][d] * m;
         }
         for (int d = 0; d < dim; d++) pooled[d] /= Math.max(maskSum, 1e-9f);
-
         float norm = 0.0f;
         for (float v : pooled) norm += v * v;
         norm = (float) Math.sqrt(norm);
@@ -75,7 +66,7 @@ public class EmbeddingService {
         return pooled;
     }
 
-    @PreDestroy
+    @Override
     public void close() throws Exception {
         session.close();
         tokenizer.close();
