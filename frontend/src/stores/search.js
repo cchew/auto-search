@@ -1,11 +1,10 @@
 import corpus from '../../../test-harness/data/corpus.json';
+import corpusConfig from '../corpusConfig.js';
 
 /** @typedef {'idle' | 'loading' | 'done' | 'error'} SearchStatus */
 /** @typedef {'semantic' | 'keyword'} SearchMode */
-/** @typedef {{ wppId: number, itemId: number, itemName: string, score: number }} SearchResultItem */
+/** @typedef {{ groupId: number, itemId: number, itemName: string, score: number }} SearchResultItem */
 
-// Read ?mode=keyword from URL to demo the LIKE-style baseline alongside semantic.
-// Supports both regular query string and hash-routed query (e.g. /#/?mode=keyword).
 function readMode() {
   if (typeof window === 'undefined') return 'semantic';
   const search = (window.location.search || '').replace(/^\?/, '');
@@ -19,15 +18,15 @@ function keywordSearch(queryText) {
   const q = queryText.toLowerCase().trim();
   const matches = [];
   for (const item of corpus) {
-    const name = (item.name || '').toLowerCase();
+    const name = (item[corpusConfig.nameField] || '').toLowerCase();
     const idx = name.indexOf(q);
     if (idx >= 0) matches.push({ item, idx });
   }
-  matches.sort((a, b) => a.idx - b.idx || a.item.name.length - b.item.name.length);
+  matches.sort((a, b) => a.idx - b.idx || a.item[corpusConfig.nameField].length - b.item[corpusConfig.nameField].length);
   return matches.slice(0, 5).map(({ item }) => ({
-    wppId: item.wpp_id,
-    itemId: item.item_id,
-    itemName: item.name,
+    groupId: item[corpusConfig.groupField],
+    itemId: item[corpusConfig.idField],
+    itemName: item[corpusConfig.nameField],
     score: 1,
   }));
 }
@@ -40,6 +39,7 @@ export default {
     /** @type {SearchResultItem[]} */ results: [],
     /** @type {SearchStatus} */ status: 'idle',
     /** @type {SearchMode} */ mode: readMode(),
+    /** @type {Object.<number, string>} */ groupNames: {},
   }),
 
   mutations: {
@@ -47,6 +47,7 @@ export default {
     setResults(state, results) { state.results = results; },
     setStatus(state, status) { state.status = status; },
     setMode(state, mode) { state.mode = mode; },
+    setGroupNames(state, names) { state.groupNames = names; },
   },
 
   actions: {

@@ -4,16 +4,13 @@
       <div class="header-inner">
         <div class="eyebrow">
           <span class="eyebrow-dot" aria-hidden="true"></span>
-          Workforce Planning Reports
+          {{ appTitle }}
           <span class="mode-badge" :class="`mode-badge--${mode}`">
             {{ mode === 'keyword' ? 'Keyword search' : 'Semantic search' }}
           </span>
         </div>
         <h1>Find the data item you need. Fast.</h1>
-        <p class="lede">
-          Semantic search across 14 report sets. Type in plain English; we'll
-          locate the underlying data items.
-        </p>
+        <p class="lede">{{ appLede }}</p>
 
         <div class="search-wrapper">
           <SearchBar />
@@ -57,44 +54,45 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import SearchBar from '../components/SearchBar.vue';
 import SearchResults from '../components/SearchResults.vue';
 import DataItemHighlight from '../components/DataItemHighlight.vue';
 import corpus from '../../test-harness/data/corpus.json';
+import corpusConfig from './corpusConfig.js';
 
 const store = useStore();
 const mode = computed(() => store.state.search.mode);
-
-const suggestions = [
-  'Primary care doctor staffing levels',
-  'How many aged care staff are we employing?',
-  'public hospital medical officer staffing levels',
-  'regional breakdown of unnecessary hospital admissions',
-];
+const appTitle = corpusConfig.appTitle;
+const appLede = corpusConfig.appLede;
+const suggestions = corpusConfig.suggestions ?? [];
 
 function useSuggestion(phrase) {
   store.dispatch('search/query', phrase);
 }
 
-const REPORT_SET_NAMES = {
-  1: 'GP Workforce', 2: 'Nursing Workforce', 3: 'Allied Health',
-  4: 'Workforce Distribution', 5: 'Training Pipeline', 6: 'Mental Health Workforce',
-  7: 'Aged Care Workforce', 8: 'Hospital Workforce', 9: 'Indigenous Health Workforce',
-  10: 'Workforce Supply & Demand', 11: 'Chronic Disease Burden',
-  12: 'Community Pharmacy', 13: 'Maternity Workforce', 14: 'Digital Health Adoption',
-};
-
 const wpps = computed(() => {
   const map = new Map();
   for (const item of corpus) {
-    if (!map.has(item.wpp_id)) {
-      map.set(item.wpp_id, { id: item.wpp_id, name: REPORT_SET_NAMES[item.wpp_id] ?? `Report Set ${item.wpp_id}`, items: [] });
+    const gid = item[corpusConfig.groupField];
+    const gname = corpusConfig.groupNames[gid] ?? `Group ${gid}`;
+    if (!map.has(gid)) {
+      map.set(gid, { id: gid, name: gname, items: [] });
     }
-    map.get(item.wpp_id).items.push({ id: item.item_id, name: item.name, description: item.description ?? '' });
+    map.get(gid).items.push({
+      id: item[corpusConfig.idField],
+      name: item[corpusConfig.nameField],
+      description: item[corpusConfig.descriptionField] ?? '',
+    });
   }
   return [...map.values()].sort((a, b) => a.id - b.id);
+});
+
+onMounted(() => {
+  const names = {};
+  for (const wpp of wpps.value) names[wpp.id] = wpp.name;
+  store.commit('search/setGroupNames', names);
 });
 </script>
 
