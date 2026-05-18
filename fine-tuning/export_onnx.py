@@ -6,13 +6,21 @@ from optimum.onnxruntime import ORTModelForFeatureExtraction
 from onnxruntime.quantization import QuantType, quantize_dynamic
 from transformers import AutoTokenizer
 
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from autosearch.config import AutoSearchConfig
+
+REPO_ROOT = Path(__file__).parent.parent
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default=str(REPO_ROOT / "config.yaml"), type=Path)
     parser.add_argument("--local", action="store_true")
     args = parser.parse_args()
 
-    output_dir = Path("output" if args.local else "/tmp/pipeline")
+    cfg = AutoSearchConfig.from_yaml(args.config)
+    output_dir = cfg.output_dir(local=args.local)
     model_path = output_dir / "model"
     onnx_dir = output_dir / "onnx"
     artefacts_dir = output_dir / "artefacts"
