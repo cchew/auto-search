@@ -1,0 +1,21 @@
+name: health-workforce
+
+corpus:
+  id_field: item_id
+  group_field: wpp_id
+  name_field: name
+  description_field: description
+
+pipeline:
+  base_model: all-MiniLM-L6-v2
+  pairs_per_item: 10
+  train_test_split: 0.8
+  min_score_threshold: 0.4
+  top_k: 5
+  domain_description: "a health workforce planner navigating workforce planning data"
+
+storage:
+  mode: local
+  local_output_dir: output/
+  s3_bucket: autosearch-artefacts-dev
+  s3_region: ap-southeast-2

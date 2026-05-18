@@ -1,0 +1,21 @@
+name: it-service-catalogue
+
+corpus:
+  id_field: service_id
+  group_field: category_id
+  name_field: title
+  description_field: summary
+
+pipeline:
+  base_model: all-MiniLM-L6-v2
+  pairs_per_item: 10
+  train_test_split: 0.8
+  min_score_threshold: 0.4
+  top_k: 5
+  domain_description: "an employee searching a corporate IT helpdesk"
+
+storage:
+  mode: local
+  local_output_dir: output/
+  s3_bucket: autosearch-artefacts-dev
+  s3_region: ap-southeast-2
