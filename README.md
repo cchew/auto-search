@@ -64,31 +64,35 @@ A manifest (`manifest.json`) stores a content hash per item: `sha256(wpp_id + it
 End-to-end run on the bundled reference corpus. **Prerequisite:** `ANTHROPIC_API_KEY` environment variable. No AWS or Terraform needed.
 
 ```bash
-# Set up Python venv (Python 3.9+)
+# Set up Python venv (Python 3.11+)
 python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
 pip install -r fine-tuning/requirements.txt
 pip install -r test-harness/requirements.txt
 
 # 1. Generate synthetic training pairs from seed corpus
-python fine-tuning/generate_pairs.py --corpus test-harness/data/corpus.json --local
+autosearch generate --corpus test-harness/data/corpus.json --local
 
 # 2. Fine-tune
-python fine-tuning/train.py --local
+autosearch train --local
 
 # 3. Export to ONNX
-python fine-tuning/export_onnx.py --local
+autosearch export --local
 
 # 4. Pre-compute embeddings
-python fine-tuning/precompute_embeddings.py --corpus test-harness/data/corpus.json --local
+autosearch embed --corpus test-harness/data/corpus.json --local
+
+# Or run all steps at once:
+autosearch pipeline --corpus test-harness/data/corpus.json --local
 
 # 5. Evaluate OOTB baselines vs fine-tuned model
-python test-harness/evaluate.py \
+autosearch evaluate \
   --corpus test-harness/data/corpus.json \
   --queries test-harness/data/test-queries.json \
-  --fine-tuned-model fine-tuning/output/model/
+  --fine-tuned-model output/health-workforce/model/
 
-# 6. Start Java backend (local mode)
-SEARCH_LOCAL=true mvn -f backend/pom.xml spring-boot:run
+# 6. Start Java backend (standalone Spring Boot)
+mvn -f backend/autosearch-spring/pom.xml spring-boot:run
 
 # 7. Start Vue frontend (in a separate terminal)
 cd frontend && npm install && npm run dev
@@ -155,11 +159,13 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 
 ## Using your own corpus
 
-1. Replace `test-harness/data/corpus.json` with your items (same schema — see [Corpus format](#corpus-format)).
-2. Optionally swap `test-harness/data/test-queries.json` for queries from your own domain. The included file is a small synthetic set used as a stand-in; real-user query logs (once they exist) are the strongest evaluation signal.
-3. Re-run steps 1–5 from [Quick Start](#quick-start). The pipeline is delta-aware — only new or changed items get re-embedded.
+1. Copy `config.yaml` to your repo root and update `corpus.id_field`, `corpus.group_field`, `corpus.name_field`, `corpus.description_field` to match your JSON keys. Set `name` and `pipeline.domain_description`.
+2. Update `frontend/src/corpusConfig.js` to mirror the same field names, and set `appTitle`, `appLede`, `suggestions`, `groupNames`.
+3. Supply your `corpus.json` (an array of objects with at least the four configured fields).
+4. Run `autosearch pipeline --corpus your-corpus.json --local`. The pipeline is delta-aware — only new or changed items get re-embedded.
+5. Optionally supply domain-specific `test-queries.json` and run `autosearch evaluate` to benchmark model quality.
 
-The Java and Vue layers are domain-agnostic. Only the corpus, queries, and `wpp_id`-to-route mapping in the frontend need to change.
+See `examples/it-service-catalogue/` for a worked example with a corporate IT helpdesk corpus.
 
 ---
 
