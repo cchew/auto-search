@@ -17,7 +17,7 @@
         >
           <span class="result-text">
             <strong>{{ result.itemName }}</strong>
-            <span class="result-wpp">{{ wppName(result.wppId) }}</span>
+            <span class="result-wpp">{{ wppName(result.groupId) }}</span>
           </span>
           <svg class="result-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
@@ -39,20 +39,13 @@ import { computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
-const REPORT_SET_NAMES = {
-  1: 'GP Workforce', 2: 'Nursing Workforce', 3: 'Allied Health',
-  4: 'Workforce Distribution', 5: 'Training Pipeline', 6: 'Mental Health Workforce',
-  7: 'Aged Care Workforce', 8: 'Hospital Workforce', 9: 'Indigenous Health Workforce',
-  10: 'Workforce Supply & Demand', 11: 'Chronic Disease Burden',
-  12: 'Community Pharmacy', 13: 'Maternity Workforce', 14: 'Digital Health Adoption',
-};
-
 const store = useStore();
 const router = useRouter();
 const results = computed(() => store.state.search.results);
 const status = computed(() => store.state.search.status);
+const groupNames = computed(() => store.state.search.groupNames);
 
-const wppName = (id) => REPORT_SET_NAMES[id] ?? `Report Set ${id}`;
+const wppName = (id) => groupNames.value[id] ?? `Group ${id}`;
 
 async function select(result) {
   await store.dispatch('search/clear');

@@ -8,7 +8,7 @@
       v-model="localQuery"
       type="text"
       role="combobox"
-      aria-label="Search workforce planning data items"
+      :aria-label="searchAriaLabel"
       aria-controls="search-results-list"
       :aria-expanded="results.length > 0"
       placeholder="Search data items, e.g. 'aged care staff numbers'"
@@ -36,6 +36,9 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useStore } from 'vuex';
+import corpusConfig from '../src/corpusConfig.js';
+
+const searchAriaLabel = corpusConfig.searchAriaLabel;
 
 const store = useStore();
 const results = computed(() => store.state.search.results);
