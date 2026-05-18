@@ -1,0 +1,426 @@
+[
+  {
+    "query": "I forgot my password and need to reset it",
+    "expected_service_id": 1
+  },
+  {
+    "query": "How do I change my expired password to access my account",
+    "expected_service_id": 1
+  },
+  {
+    "query": "I can't log in, my account is locked",
+    "expected_service_id": 2
+  },
+  {
+    "query": "how do I unlock my account after too many wrong passwords",
+    "expected_service_id": 2
+  },
+  {
+    "query": "how do I set up two-factor authentication for my account",
+    "expected_service_id": 3
+  },
+  {
+    "query": "I need to enable MFA on my work system",
+    "expected_service_id": 3
+  },
+  {
+    "query": "I need to work from home and access company files remotely",
+    "expected_service_id": 4
+  },
+  {
+    "query": "How do I connect to the office network from outside the office",
+    "expected_service_id": 4
+  },
+  {
+    "query": "I need admin access to install software on my computer",
+    "expected_service_id": 5
+  },
+  {
+    "query": "How do I get higher permissions to run this application",
+    "expected_service_id": 5
+  },
+  {
+    "query": "I need to set up a new account for a staff member joining our team",
+    "expected_service_id": 6
+  },
+  {
+    "query": "How do I get login credentials created for a new employee",
+    "expected_service_id": 6
+  },
+  {
+    "query": "how do I deactivate an employee account when someone leaves",
+    "expected_service_id": 7
+  },
+  {
+    "query": "I need to disable a user account for a contractor",
+    "expected_service_id": 7
+  },
+  {
+    "query": "my laptop is broken and I need a new one",
+    "expected_service_id": 8
+  },
+  {
+    "query": "how do I get a replacement laptop",
+    "expected_service_id": 8
+  },
+  {
+    "query": "I need a new monitor for my desk",
+    "expected_service_id": 9
+  },
+  {
+    "query": "how do I request a replacement screen for my computer",
+    "expected_service_id": 9
+  },
+  {
+    "query": "I need a new keyboard and mouse for my desk",
+    "expected_service_id": 10
+  },
+  {
+    "query": "how do i request extra peripherals for my workstation",
+    "expected_service_id": 10
+  },
+  {
+    "query": "I need to set up my new work phone",
+    "expected_service_id": 11
+  },
+  {
+    "query": "how do I get my tablet configured for work",
+    "expected_service_id": 11
+  },
+  {
+    "query": "I need a docking station for my laptop at my desk",
+    "expected_service_id": 12
+  },
+  {
+    "query": "How do I get set up with a docking station for my workstation",
+    "expected_service_id": 12
+  },
+  {
+    "query": "my computer screen is broken and won't turn on, how do I get it fixed",
+    "expected_service_id": 13
+  },
+  {
+    "query": "I need to report that my keyboard isn't working properly",
+    "expected_service_id": 13
+  },
+  {
+    "query": "how do I set up my new webcam",
+    "expected_service_id": 14
+  },
+  {
+    "query": "I need help configuring my scanner",
+    "expected_service_id": 14
+  },
+  {
+    "query": "I need to set up a new employee with a computer and email account",
+    "expected_service_id": 15
+  },
+  {
+    "query": "how do I get access and equipment ready for someone joining the company",
+    "expected_service_id": 15
+  },
+  {
+    "query": "I'm moving to a different department and need my access updated",
+    "expected_service_id": 16
+  },
+  {
+    "query": "how do I get my system permissions changed after switching roles",
+    "expected_service_id": 16
+  },
+  {
+    "query": "I need to set up access for a contractor who's starting next week",
+    "expected_service_id": 17
+  },
+  {
+    "query": "how do I get a temporary account created for an external vendor",
+    "expected_service_id": 17
+  },
+  {
+    "query": "I need to offboard an employee who is leaving the company",
+    "expected_service_id": 18
+  },
+  {
+    "query": "How do I remove access and return equipment when someone quits?",
+    "expected_service_id": 18
+  },
+  {
+    "query": "how do I return my work laptop and equipment when I leave",
+    "expected_service_id": 19
+  },
+  {
+    "query": "I need to give back my company phone and other stuff",
+    "expected_service_id": 19
+  },
+  {
+    "query": "how do i set up an email mailbox that multiple people can access",
+    "expected_service_id": 20
+  },
+  {
+    "query": "i need a team email address that everyone can check and respond from",
+    "expected_service_id": 20
+  },
+  {
+    "query": "how do I create a mailing group for my team",
+    "expected_service_id": 21
+  },
+  {
+    "query": "I need to remove people from an email distribution list",
+    "expected_service_id": 21
+  },
+  {
+    "query": "I need to get a new software license for my work",
+    "expected_service_id": 22
+  },
+  {
+    "query": "How do I request a seat for an application I need to use",
+    "expected_service_id": 22
+  },
+  {
+    "query": "I need access to an application that I don't have yet",
+    "expected_service_id": 23
+  },
+  {
+    "query": "How do I get added to a system I'm not currently using?",
+    "expected_service_id": 23
+  },
+  {
+    "query": "I need to install a browser extension on my work computer",
+    "expected_service_id": 24
+  },
+  {
+    "query": "how do I get approval for a plugin I want to use",
+    "expected_service_id": 24
+  },
+  {
+    "query": "How do I set up a new account in our cloud software?",
+    "expected_service_id": 25
+  },
+  {
+    "query": "I need to get started with the SaaS application",
+    "expected_service_id": 25
+  },
+  {
+    "query": "I need to update my software to the latest version",
+    "expected_service_id": 26
+  },
+  {
+    "query": "How do I upgrade an application I already have installed",
+    "expected_service_id": 26
+  },
+  {
+    "query": "My application keeps crashing, how do I report this?",
+    "expected_service_id": 27
+  },
+  {
+    "query": "I need to submit a bug report for a system error",
+    "expected_service_id": 27
+  },
+  {
+    "query": "I need to install a program that's not in the standard list",
+    "expected_service_id": 28
+  },
+  {
+    "query": "how do I get approval to use custom software on my computer",
+    "expected_service_id": 28
+  },
+  {
+    "query": "how do I connect my laptop to the office wifi",
+    "expected_service_id": 29
+  },
+  {
+    "query": "I need wireless network password and login credentials",
+    "expected_service_id": 29
+  },
+  {
+    "query": "how do I access shared files on the network from my computer",
+    "expected_service_id": 30
+  },
+  {
+    "query": "I need to connect a shared folder to my computer so I can see it in file explorer",
+    "expected_service_id": 30
+  },
+  {
+    "query": "I need to allow traffic through the firewall for a new application",
+    "expected_service_id": 31
+  },
+  {
+    "query": "How do I block network traffic to a specific IP address",
+    "expected_service_id": 31
+  },
+  {
+    "query": "How do I get a permanent IP address for my server?",
+    "expected_service_id": 32
+  },
+  {
+    "query": "I need to stop my device's IP from changing every time it restarts",
+    "expected_service_id": 32
+  },
+  {
+    "query": "how do I access my work computer from home",
+    "expected_service_id": 33
+  },
+  {
+    "query": "I need to connect to my desktop remotely from another location",
+    "expected_service_id": 33
+  },
+  {
+    "query": "how do I connect my computer to a printer on the network",
+    "expected_service_id": 34
+  },
+  {
+    "query": "I need to set up a network printer for my workstation",
+    "expected_service_id": 34
+  },
+  {
+    "query": "I need to report my internet is down and I can't connect to the network",
+    "expected_service_id": 35
+  },
+  {
+    "query": "how do I report that my connection is really slow today",
+    "expected_service_id": 35
+  },
+  {
+    "query": "I have a question about our IT systems and policies",
+    "expected_service_id": 36
+  },
+  {
+    "query": "How do I find out information about IT services?",
+    "expected_service_id": 36
+  },
+  {
+    "query": "My computer is down and I can't access the network",
+    "expected_service_id": 37
+  },
+  {
+    "query": "How do I report that a system is not working",
+    "expected_service_id": 37
+  },
+  {
+    "query": "I need to request new software or equipment from IT",
+    "expected_service_id": 38
+  },
+  {
+    "query": "How do I submit a request for IT services or products?",
+    "expected_service_id": 38
+  },
+  {
+    "query": "I need to make a change to our system setup",
+    "expected_service_id": 39
+  },
+  {
+    "query": "How do I request a planned update to my application?",
+    "expected_service_id": 39
+  },
+  {
+    "query": "I need to report a critical system outage that's affecting our business",
+    "expected_service_id": 40
+  },
+  {
+    "query": "how do I report a major incident or emergency issue",
+    "expected_service_id": 40
+  },
+  {
+    "query": "how do I escalate my support ticket to someone higher up",
+    "expected_service_id": 41
+  },
+  {
+    "query": "I need to move my delayed request to a higher level of support",
+    "expected_service_id": 41
+  },
+  {
+    "query": "I need to access a shared folder on the network",
+    "expected_service_id": 42
+  },
+  {
+    "query": "how do I get permission to use a team drive",
+    "expected_service_id": 42
+  },
+  {
+    "query": "I accidentally deleted an important file, how do I get it back?",
+    "expected_service_id": 43
+  },
+  {
+    "query": "My file got corrupted and won't open, can you recover it from backup?",
+    "expected_service_id": 43
+  },
+  {
+    "query": "I need more storage space for my team",
+    "expected_service_id": 44
+  },
+  {
+    "query": "How do I increase my disk quota",
+    "expected_service_id": 44
+  },
+  {
+    "query": "I need to back up my files right now",
+    "expected_service_id": 45
+  },
+  {
+    "query": "How do I schedule a backup for my computer?",
+    "expected_service_id": 45
+  },
+  {
+    "query": "I need to access old files that aren't on my regular storage anymore",
+    "expected_service_id": 46
+  },
+  {
+    "query": "How do I get archived records from storage?",
+    "expected_service_id": 46
+  },
+  {
+    "query": "I need to move my data to a different system",
+    "expected_service_id": 47
+  },
+  {
+    "query": "How do I transfer files from our old database to the new platform?",
+    "expected_service_id": 47
+  },
+  {
+    "query": "I think someone accessed my account without permission, how do I report it?",
+    "expected_service_id": 48
+  },
+  {
+    "query": "My files are missing and I'm worried about a data breach, where do I report this?",
+    "expected_service_id": 48
+  },
+  {
+    "query": "I received a suspicious email that looks like it's trying to steal my password, how do I report it?",
+    "expected_service_id": 49
+  },
+  {
+    "query": "Someone sent me a fake email pretending to be from IT, what should I do?",
+    "expected_service_id": 49
+  },
+  {
+    "query": "I need to use a USB drive for work but it's blocked, how do I get permission",
+    "expected_service_id": 50
+  },
+  {
+    "query": "how do I request an exception to use my external storage device",
+    "expected_service_id": 50
+  },
+  {
+    "query": "I need to access audit logs for a compliance investigation",
+    "expected_service_id": 51
+  },
+  {
+    "query": "How do I get system logs to review user activity and changes",
+    "expected_service_id": 51
+  },
+  {
+    "query": "My SSL certificate is about to expire, how do I renew it?",
+    "expected_service_id": 52
+  },
+  {
+    "query": "I need to update my digital certificate before it runs out",
+    "expected_service_id": 52
+  },
+  {
+    "query": "How do I complete my security training",
+    "expected_service_id": 53
+  },
+  {
+    "query": "I need to enroll my team in phishing awareness training",
+    "expected_service_id": 53
+  }
+]
