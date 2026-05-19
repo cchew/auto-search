@@ -10,7 +10,7 @@ from generate_pairs import item_hash
 from precompute_embeddings import load_embeddings, load_manifest
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-CFG = AutoSearchConfig.from_yaml(REPO_ROOT / "config.yaml")
+CFG = AutoSearchConfig.from_yaml(REPO_ROOT / "examples" / "health-workforce" / "config.yaml")
 
 CORPUS = [
     {"item_id": 1, "wpp_id": 1, "name": "GP FTE", "description": "Full-time equivalent GPs."},

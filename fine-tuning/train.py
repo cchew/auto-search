@@ -22,7 +22,7 @@ def load_pairs(path: Path) -> list[InputExample]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default=str(REPO_ROOT / "config.yaml"), type=Path)
+    parser.add_argument("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), type=Path)
     parser.add_argument("--local", action="store_true")
     args = parser.parse_args()
 

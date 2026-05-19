@@ -41,7 +41,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--corpus", required=True, type=Path)
     parser.add_argument("--queries", required=True, type=Path)
-    parser.add_argument("--config", default=str(REPO_ROOT / "config.yaml"), type=Path)
+    parser.add_argument("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), type=Path)
     parser.add_argument("--fine-tuned-model", type=Path)
     args = parser.parse_args()
 

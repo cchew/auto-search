@@ -23,7 +23,7 @@ autosearch evaluate \
 
 ## Adapting to your own domain
 
-1. Copy `examples/it-service-catalogue/config.yaml` to your project root as `config.yaml`
+1. Copy `examples/it-service-catalogue/config.yaml` (or `examples/health-workforce/config.yaml`) to a new folder for your project and customize
 2. Set `id_field`, `group_field`, `name_field`, `description_field` to match your corpus JSON keys
 3. Set `domain_description` to describe who will be searching (used to generate synthetic training queries)
 4. Set `name` to a short identifier for your domain (used to namespace pipeline output)

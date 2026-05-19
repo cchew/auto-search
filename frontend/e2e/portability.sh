@@ -95,9 +95,9 @@ assert_snapshot_contains "Account & Authentication"
 
 echo "[4/5] Restarting backend with health-workforce..."
 start_backend \
-  "$REPO/config.yaml" \
+  "$ROOT/examples/health-workforce/config.yaml" \
   "$REPO/output/health-workforce" \
-  "$REPO/test-harness/data/corpus.json" \
+  "$ROOT/examples/health-workforce/corpus.json" \
   "$ROOT/examples/health-workforce/corpus-ui.json"
 
 echo "[5/5] Reloading + asserting health UI..."
