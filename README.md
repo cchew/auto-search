@@ -119,6 +119,7 @@ autosearch pipeline --corpus $EX/corpus.json --config $EX/config.yaml --local
 ARTS=output/it-service-catalogue
 mvn -f backend/autosearch-spring/pom.xml spring-boot:run \
   -Dspring-boot.run.arguments="\
+    --autosearch.allowed-root=$(pwd) \
     --autosearch.config-path=$EX/config.yaml \
     --autosearch.model-path=$ARTS/artefacts/autosearch-embed.onnx \
     --autosearch.tokenizer-path=$ARTS/artefacts/ \
@@ -132,6 +133,8 @@ cd frontend && npm install && npm run dev
 ```
 
 Note: `$ARTS/corpus-ui.json` (pipeline output) is used in step 3, not the pre-shipped `$EX/corpus-ui.json`. The bundled examples include both — pipeline-generated artefacts are what change per-domain.
+
+`autosearch.allowed-root` confines the file-serving endpoints to a safe directory subtree — the backend will refuse to start if any configured path (corpus, ui-config, model, embeddings, tokenizer) resolves outside it. Set it to the repo root for the default flow, or to a parent directory that contains all your artefact paths.
 
 **Switch domains:** stop the backend, point the `-D` properties at a different example's artefacts, restart. The frontend fetches the corpus and UI labels from the backend on load, so no frontend rebuild is required.
 
