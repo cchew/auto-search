@@ -160,7 +160,7 @@ Benchmarked on the 350-item seed corpus. Fine-tuning used 5,200 training pairs g
 | bge-small-en-v1.5 (OOTB baseline) | 0.800 | 0.850 |
 | all-MiniLM-L6-v2 (fine-tuned, INT8 ONNX) | **0.850** | **0.908** |
 
-Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best OOTB baseline. Full scores in `test-harness/results/scores-2026-04-24.csv`.
+Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best OOTB baseline. Full scores in [`examples/health-workforce/results/scores-2026-04-24.csv`](examples/health-workforce/results/scores-2026-04-24.csv).
 
 ---
 
