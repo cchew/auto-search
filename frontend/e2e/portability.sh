@@ -29,6 +29,7 @@ start_backend() {
 
   (cd "$ROOT" && mvn -q -f backend/autosearch-spring/pom.xml spring-boot:run \
     -Dspring-boot.run.arguments="\
+      --autosearch.allowed-root=$(dirname "$ROOT") \
       --autosearch.config-path=$config \
       --autosearch.model-path=$artefacts/artefacts/autosearch-embed.onnx \
       --autosearch.tokenizer-path=$artefacts/artefacts/ \
