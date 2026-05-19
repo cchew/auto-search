@@ -1,6 +1,7 @@
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -38,19 +39,39 @@ class AutoSearchConfig:
     pipeline: PipelineConfig
     storage: StorageConfig
 
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("config.yaml: 'name' is required (non-empty string)")
+        for fname in ("id_field", "group_field", "name_field"):
+            val = getattr(self.corpus, fname)
+            if not val:
+                raise ValueError(f"config.yaml: 'corpus.{fname}' is required (non-empty string)")
+        if self.pipeline.pairs_per_item <= 0:
+            raise ValueError(
+                f"config.yaml: 'pipeline.pairs_per_item' must be > 0 (got {self.pipeline.pairs_per_item})"
+            )
+        if not (0 < self.pipeline.train_test_split < 1):
+            raise ValueError(
+                f"config.yaml: 'pipeline.train_test_split' must be in (0, 1) (got {self.pipeline.train_test_split})"
+            )
+        if not (0 <= self.pipeline.min_score_threshold <= 1):
+            raise ValueError(
+                f"config.yaml: 'pipeline.min_score_threshold' must be in [0, 1] (got {self.pipeline.min_score_threshold})"
+            )
+
     @classmethod
     def from_yaml(cls, path: Path) -> "AutoSearchConfig":
         data = yaml.safe_load(Path(path).read_text())
         c = data["corpus"]
         p = data.get("pipeline", {})
         s = data.get("storage", {})
-        return cls(
-            name=data.get("name", "default"),
+        cfg = cls(
+            name=data.get("name") or "",
             corpus=CorpusConfig(
-                id_field=c["id_field"],
-                group_field=c["group_field"],
-                name_field=c["name_field"],
-                description_field=c["description_field"],
+                id_field=c.get("id_field") or "",
+                group_field=c.get("group_field") or "",
+                name_field=c.get("name_field") or "",
+                description_field=c.get("description_field") or "",
             ),
             pipeline=PipelineConfig(
                 base_model=p.get("base_model", "all-MiniLM-L6-v2"),
@@ -67,11 +88,16 @@ class AutoSearchConfig:
                 s3_region=s.get("s3_region", "ap-southeast-2"),
             ),
         )
+        cfg.validate()
+        return cfg
 
     def output_dir(self, local: bool) -> Path:
         if local:
             return Path(self.storage.local_output_dir) / self.name
-        return Path("/tmp/pipeline") / self.name
+        raise NotImplementedError(
+            "Non-local (S3) output is not implemented. Pass --local to all pipeline commands. "
+            "StorageConfig.s3_bucket/s3_region fields are reserved for future use."
+        )
 
 
 def item_hash(item: dict, cfg: AutoSearchConfig) -> str:

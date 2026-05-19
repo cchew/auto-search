@@ -79,3 +79,33 @@ def test_derive_ui_config_handles_unknown_group_ids(tmp_path):
 
     assert ui["groupNames"]["1"] == "Identity & Access"
     assert ui["groupNames"]["99"] == "Group 99"
+
+
+def test_derive_ui_config_raises_on_malformed_labels_json():
+    import pytest
+    cfg = AutoSearchConfig.from_yaml(FIXTURE_CFG)
+    corpus = [{"service_id": 1, "category_id": 1, "title": "X", "summary": ""}]
+    client = FakeClient(["this is not json", "[]"])
+    with pytest.raises(ValueError, match="labels response is not valid JSON"):
+        derive_ui_config(corpus, cfg, client)
+
+
+def test_derive_ui_config_raises_on_missing_appTitle():
+    import pytest
+    cfg = AutoSearchConfig.from_yaml(FIXTURE_CFG)
+    corpus = [{"service_id": 1, "category_id": 1, "title": "X", "summary": ""}]
+    labels_json = json.dumps({"appLede": "L", "groupNames": {}})
+    suggestions_json = json.dumps(["a", "b", "c", "d"])
+    client = FakeClient([labels_json, suggestions_json])
+    with pytest.raises(ValueError, match="missing required key 'appTitle'"):
+        derive_ui_config(corpus, cfg, client)
+
+
+def test_derive_ui_config_raises_on_non_array_suggestions():
+    import pytest
+    cfg = AutoSearchConfig.from_yaml(FIXTURE_CFG)
+    corpus = [{"service_id": 1, "category_id": 1, "title": "X", "summary": ""}]
+    labels_json = json.dumps({"appTitle": "T", "appLede": "L", "groupNames": {"1": "X"}})
+    client = FakeClient([labels_json, '{"not": "an array"}'])
+    with pytest.raises(ValueError, match="suggestions response must be a JSON array"):
+        derive_ui_config(corpus, cfg, client)

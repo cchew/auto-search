@@ -154,7 +154,7 @@ Smaller, faster, more accurate — directional only, n=20.</p>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="12" data-paginate="true" data-theme="default" lang="C" data-marpit-pagination="12" style="--paginate:true;--theme:default;" data-marpit-pagination-total="16" data-size="16:9">
 <h2 id="lessons-learnt">Lessons Learnt</h2>
 <ul>
-<li><strong>Threshold tuning matters more than the model</strong> — <code>minScore = 0.3</code> set by eyeballing results</li>
+<li><strong>Threshold tuning matters more than the model</strong> — <code>minScore = 0.4</code> set by eyeballing results</li>
 <li><strong>LLM holdout overstates performance</strong> — weaker secondary set results; real-user logs are still a follow-up</li>
 <li><strong>Batch size affects retrieval training</strong> — <code>MultipleNegativesRankingLoss</code> needs ≥32 to converge cleanly</li>
 <li><strong>Embeddings are not free RAM</strong> — 50k items = 75 MB before indexing</li>

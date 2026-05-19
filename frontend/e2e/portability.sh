@@ -29,6 +29,7 @@ start_backend() {
 
   (cd "$ROOT" && mvn -q -f backend/autosearch-spring/pom.xml spring-boot:run \
     -Dspring-boot.run.arguments="\
+      --autosearch.allowed-root=$(dirname "$ROOT") \
       --autosearch.config-path=$config \
       --autosearch.model-path=$artefacts/artefacts/autosearch-embed.onnx \
       --autosearch.tokenizer-path=$artefacts/artefacts/ \
@@ -60,6 +61,19 @@ start_frontend() {
   return 1
 }
 
+wait_for_snapshot_contains() {
+  local needle="$1"
+  local timeout="${2:-30}"
+  for _ in $(seq 1 $timeout); do
+    if playwright-cli -s=tier2-e2e --raw snapshot 2>/dev/null | grep -qF "$needle"; then
+      return 0
+    fi
+    sleep 1
+  done
+  echo "  TIMEOUT waiting for snapshot to contain '$needle'"
+  return 1
+}
+
 assert_snapshot_contains() {
   local needle="$1"
   local snap
@@ -86,10 +100,7 @@ start_frontend
 
 echo "[3/5] Asserting IT UI..."
 playwright-cli -s=tier2-e2e open http://localhost:5173 >/dev/null
-sleep 3
-playwright-cli -s=tier2-e2e goto http://localhost:5173 >/dev/null
-sleep 2
-assert_snapshot_contains "IT Helpdesk Request Catalogue"
+wait_for_snapshot_contains "IT Helpdesk Request Catalogue"
 assert_snapshot_contains "password reset"
 assert_snapshot_contains "Account & Authentication"
 
@@ -102,8 +113,7 @@ start_backend \
 
 echo "[5/5] Reloading + asserting health UI..."
 playwright-cli -s=tier2-e2e goto http://localhost:5173 >/dev/null
-sleep 3
-assert_snapshot_contains "Auto Search"
+wait_for_snapshot_contains "Auto Search"
 assert_snapshot_contains "Primary care doctor staffing levels"
 assert_snapshot_contains "GP Workforce"
 

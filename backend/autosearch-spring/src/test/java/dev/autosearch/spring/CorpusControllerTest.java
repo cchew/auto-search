@@ -18,27 +18,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(CorpusController.class)
 class CorpusControllerTest {
 
-    static final String CORPUS_PATH   = "target/test-corpus/corpus.json";
-    static final String UI_CONFIG_PATH = "target/test-corpus/corpus-ui.json";
+    static final Path CORPUS_PATH    = Path.of("target/test-corpus/corpus.json");
+    static final Path UI_CONFIG_PATH = Path.of("target/test-corpus/corpus-ui.json");
 
     @Autowired MockMvc mvc;
 
-    @MockBean AutoSearchProperties props;
+    @MockBean PathGuard pathGuard;
 
     @BeforeAll
     static void writeFixtures() throws IOException {
         Path dir = Path.of("target/test-corpus");
         Files.createDirectories(dir);
-        Files.writeString(dir.resolve("corpus.json"),
+        Files.writeString(CORPUS_PATH,
             "[{\"service_id\":1,\"category_id\":1,\"title\":\"Password Reset\"}]");
-        Files.writeString(dir.resolve("corpus-ui.json"),
+        Files.writeString(UI_CONFIG_PATH,
             "{\"appTitle\":\"IT Service Catalogue\",\"appLede\":\"Search.\"," +
             "\"suggestions\":[],\"groupNames\":{}}");
     }
 
     @Test
     void get_corpus_returns_items() throws Exception {
-        when(props.getCorpusPath()).thenReturn(CORPUS_PATH);
+        when(pathGuard.getCorpusPath()).thenReturn(CORPUS_PATH.toAbsolutePath());
 
         mvc.perform(get("/api/v1/corpus"))
            .andExpect(status().isOk())
@@ -47,7 +47,7 @@ class CorpusControllerTest {
 
     @Test
     void get_ui_config_returns_labels() throws Exception {
-        when(props.getUiConfigPath()).thenReturn(UI_CONFIG_PATH);
+        when(pathGuard.getUiConfigPath()).thenReturn(UI_CONFIG_PATH.toAbsolutePath());
 
         mvc.perform(get("/api/v1/corpus/ui-config"))
            .andExpect(status().isOk())

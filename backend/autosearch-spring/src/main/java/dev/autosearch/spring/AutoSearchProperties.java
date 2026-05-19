@@ -10,6 +10,9 @@ public class AutoSearchProperties {
     private String embeddingsPath;
     private String corpusPath;
     private String uiConfigPath;
+    /** Optional. Canonical root that corpus-path and ui-config-path must reside under.
+     *  Defaults to the JVM working directory when not set. */
+    private String allowedRoot;
 
     public String getConfigPath() { return configPath; }
     public void setConfigPath(String v) { this.configPath = v; }
@@ -23,4 +26,6 @@ public class AutoSearchProperties {
     public void setCorpusPath(String v) { this.corpusPath = v; }
     public String getUiConfigPath() { return uiConfigPath; }
     public void setUiConfigPath(String v) { this.uiConfigPath = v; }
+    public String getAllowedRoot() { return allowedRoot; }
+    public void setAllowedRoot(String v) { this.allowedRoot = v; }
 }
