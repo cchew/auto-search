@@ -43,7 +43,7 @@ const store = useStore();
 const router = useRouter();
 const results = computed(() => store.state.search.results);
 const status = computed(() => store.state.search.status);
-const groupNames = computed(() => store.state.search.groupNames);
+const groupNames = computed(() => store.state.corpus.ui.groupNames);
 
 const wppName = (id) => groupNames.value[id] ?? `Group ${id}`;
 
