@@ -7,7 +7,7 @@ from autosearch.config import AutoSearchConfig
 from generate_pairs import generate_queries, item_hash, item_text, split_pairs
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-CFG = AutoSearchConfig.from_yaml(REPO_ROOT / "config.yaml")
+CFG = AutoSearchConfig.from_yaml(REPO_ROOT / "examples" / "health-workforce" / "config.yaml")
 
 ITEM = {"item_id": 1, "wpp_id": 1, "name": "GP FTE",
         "description": "Full-time equivalent general practitioners."}
