@@ -94,7 +94,10 @@ class AutoSearchConfig:
     def output_dir(self, local: bool) -> Path:
         if local:
             return Path(self.storage.local_output_dir) / self.name
-        return Path("/tmp/pipeline") / self.name
+        raise NotImplementedError(
+            "Non-local (S3) output is not implemented. Pass --local to all pipeline commands. "
+            "StorageConfig.s3_bucket/s3_region fields are reserved for future use."
+        )
 
 
 def item_hash(item: dict, cfg: AutoSearchConfig) -> str:
