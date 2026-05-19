@@ -1,10 +1,30 @@
 # Auto Search
 
-Semantic search for structured data item catalogues. Type a natural-language query; jump straight to the matching item across any report set.
+Domain-portable semantic search for structured data item catalogues. Drop in a `corpus.json` + `config.yaml`, run the pipeline, restart the backend — the same Vue frontend serves any domain with no rebuild. UI labels (title, lede, suggestions, group names) are derived per-domain by Claude.
 
-A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on a 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
+A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on the reference 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
 
-![Search dropdown](docs/search-dropdown.png)
+![Search dropdown](presentation/screenshots/search-dropdown.png)
+
+## Bundled examples
+
+Two worked domains ship in `examples/`. Both are fully runnable from the repo with no further configuration.
+
+| Example | Items | Field shape | Use it to... |
+|---|---|---|---|
+| [`health-workforce`](examples/health-workforce/) | 350 | `item_id` / `wpp_id` / `name` / `description` | Reproduce the published evaluation results; the canonical reference corpus |
+| [`it-service-catalogue`](examples/it-service-catalogue/) | 53 | `service_id` / `category_id` / `title` / `summary` | Prove portability: same frontend, different field names, different domain language |
+
+Switching between them at runtime is a backend restart with different `-D` paths (see [Quick Start](#quick-start)). The frontend fetches the corpus and UI labels from the backend on every page load.
+
+---
+
+## Version history
+
+| Version | Description |
+|---|---|
+| v0.2.0 | Tier-2 portability: backend serves corpus + UI config via REST; frontend bootstraps from `/api/v1/corpus` and `/api/v1/corpus/ui-config`; `autosearch ui-config` CLI derives UI labels via Claude. New domain = `corpus.json` + `config.yaml` + `autosearch pipeline` + backend restart. No frontend rebuild. Playwright E2E (`npm run test:e2e`) proves the swap across health-workforce and it-service-catalogue. |
+| v0.1.0 | Initial release: fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX) served in-JVM via Spring Boot + Vue 3 frontend. Offline pipeline (generate → train → export → embed) with delta-aware manifest. Recall@1 0.85 / MRR@5 0.91 on the 350-item health workforce planning corpus. |
 
 ---
 
@@ -126,7 +146,7 @@ cd frontend && npm install && npm run dev
 | `name` | Yes | Display name. Used for embedding. |
 | `description` | Recommended | Significantly improves recall. Empty string if unavailable. |
 
-A reference corpus of ~350 synthetic items (health workforce planning concepts) ships in `test-harness/data/corpus.json`. To adapt to a different domain, replace it and re-run the pipeline — see [Using your own corpus](#using-your-own-corpus).
+A reference corpus of ~350 synthetic items (health workforce planning concepts) ships in `examples/health-workforce/corpus.json`. To adapt to a different domain, see [Using your own corpus](#using-your-own-corpus).
 
 ---
 
@@ -162,7 +182,7 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 
 ## Using your own corpus
 
-1. Copy `config.yaml` to your repo root and update `corpus.id_field`, `corpus.group_field`, `corpus.name_field`, `corpus.description_field` to match your JSON keys. Set `name` and `pipeline.domain_description`.
+1. Copy `examples/health-workforce/config.yaml` (or any example's config) as a starting point, update `corpus.id_field`, `corpus.group_field`, `corpus.name_field`, `corpus.description_field` to match your JSON keys. Set `name` and `pipeline.domain_description`. Place it wherever you like and always pass `--config <path>` to the CLI.
 2. Supply your `corpus.json` (an array of objects with at least the four configured fields).
 3. Run `autosearch pipeline --corpus your-corpus.json --config your-config.yaml --local`. The pipeline is delta-aware — only new or changed items get re-embedded. The final step generates `corpus-ui.json` (UI title, lede, suggestions, group names) via Claude.
 4. Start the backend pointing `--autosearch.corpus-path` and `--autosearch.ui-config-path` at your generated files (see Quick Start).

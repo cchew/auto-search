@@ -1,5 +1,5 @@
 import { createStore } from 'vuex';
-import searchModule from '../src/stores/search.js';
+import searchModule from '../stores/search.js';
 
 function makeStore() {
   return createStore({ modules: { search: searchModule } });

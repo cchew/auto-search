@@ -1,7 +1,16 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { createStore } from 'vuex';
 import SearchBar from '../components/SearchBar.vue';
-import searchModule from '../src/stores/search.js';
+import searchModule from '../stores/search.js';
+
+const corpusModule = {
+  namespaced: true,
+  state: () => ({
+    items: [],
+    ui: { searchAriaLabel: 'Search data items', groupNames: {} },
+    loaded: false,
+  }),
+};
 
 function mountBar(actionOverrides = {}) {
   const store = createStore({
@@ -10,6 +19,7 @@ function mountBar(actionOverrides = {}) {
         ...searchModule,
         actions: { ...searchModule.actions, ...actionOverrides },
       },
+      corpus: corpusModule,
     },
   });
   return { wrapper: mount(SearchBar, { global: { plugins: [store] } }), store };
