@@ -1,20 +1,21 @@
 .DS_Store
 .idea/
+.playwright-cli/
+.pytest_cache/
 .venv/
 .vscode/
+*.egg-info/
 *.env
 *.iml
 *.log
 *.pyc
 __pycache__/
-.pytest_cache/
+backend/**/target/
 backend/src/main/resources/embeddings/
 backend/src/main/resources/model/
-backend/**/target/
 fine-tuning/data/
 fine-tuning/output/
 frontend/dist/
-output/
-frontend/.playwright-cli/
 node_modules/
+output/
 # test-harness/results/ — unignored; evaluation reports committed as artefacts
