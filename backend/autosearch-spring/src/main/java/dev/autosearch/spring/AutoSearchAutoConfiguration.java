@@ -16,6 +16,12 @@ public class AutoSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public PathGuard pathGuard(AutoSearchProperties props) {
+        return new PathGuard(props);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public AutoSearchConfig autoSearchConfig(AutoSearchProperties props) throws Exception {
         return AutoSearchConfig.fromYaml(Path.of(props.getConfigPath()));
     }
