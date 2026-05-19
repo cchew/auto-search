@@ -65,8 +65,22 @@ def derive_ui_config(
         group_samples.setdefault(gid, []).append(name)
         titles.append(name)
 
-    labels = json.loads(_call(client, _labels_prompt(group_samples, cfg.pipeline.domain_description)))
-    suggestions = json.loads(_call(client, _suggestions_prompt(titles, cfg.pipeline.domain_description)))
+    labels_raw = _call(client, _labels_prompt(group_samples, cfg.pipeline.domain_description))
+    try:
+        labels = json.loads(labels_raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"ui-config: labels response is not valid JSON: {e.msg}\nResponse:\n{labels_raw}") from e
+    for required in ("appTitle", "appLede"):
+        if required not in labels:
+            raise ValueError(f"ui-config: labels response is missing required key '{required}'\nResponse:\n{labels_raw}")
+
+    suggestions_raw = _call(client, _suggestions_prompt(titles, cfg.pipeline.domain_description))
+    try:
+        suggestions = json.loads(suggestions_raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"ui-config: suggestions response is not valid JSON: {e.msg}\nResponse:\n{suggestions_raw}") from e
+    if not isinstance(suggestions, list):
+        raise ValueError(f"ui-config: suggestions response must be a JSON array, got {type(suggestions).__name__}\nResponse:\n{suggestions_raw}")
 
     group_names: dict[str, str] = {}
     for gid in group_samples:

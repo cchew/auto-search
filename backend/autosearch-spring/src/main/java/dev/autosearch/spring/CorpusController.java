@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -18,22 +17,22 @@ import java.util.Map;
 @RequestMapping("/api/v1/corpus")
 public class CorpusController {
 
-    private final AutoSearchProperties props;
+    private final PathGuard pathGuard;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public CorpusController(AutoSearchProperties props) {
-        this.props = props;
+    public CorpusController(PathGuard pathGuard) {
+        this.pathGuard = pathGuard;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Map<String, Object>>> corpus() throws IOException {
-        return ResponseEntity.ok(CorpusLoader.load(props.getCorpusPath()));
+        return ResponseEntity.ok(CorpusLoader.load(pathGuard.getCorpusPath().toString()));
     }
 
     @GetMapping(path = "/ui-config", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> uiConfig() throws IOException {
         Map<String, Object> ui = mapper.readValue(
-            Path.of(props.getUiConfigPath()).toFile(), new TypeReference<>() {});
+            pathGuard.getUiConfigPath().toFile(), new TypeReference<>() {});
         return ResponseEntity.ok(ui);
     }
 }
