@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { createStore } from 'vuex';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import SearchResults from '../components/SearchResults.vue';
-import searchModule from '../src/stores/search.js';
+import searchModule from '../stores/search.js';
 
 function mountResults(stateOverrides = {}) {
   const store = createStore({
