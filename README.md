@@ -4,7 +4,7 @@ Semantic search for structured data item catalogues. Type a natural-language que
 
 A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on a 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
 
-![Search dropdown](docs/search-dropdown.png)
+![Search dropdown](presentation/screenshots/search-dropdown.png)
 
 ---
 
