@@ -30,9 +30,11 @@ corpus.json
   → train.py               sentence-transformers fine-tune (MultipleNegativesRankingLoss)
   → export_onnx.py         ONNX export + INT8 quantisation
   → precompute_embeddings.py  embed all items (delta-aware) → data-items.json
+  → ui_config.py           Claude API: derive UI labels → corpus-ui.json
   → S3: autosearch-artefacts-{env}/
         model/autosearch-embed.onnx
         embeddings/data-items.json
+        ui/corpus-ui.json
 ```
 
 ### Runtime (Java/Spring)
@@ -41,6 +43,11 @@ corpus.json
 App startup:
   EmbeddingService  — loads autosearch-embed.onnx
   SimilarityService — loads data-items.json (in-memory vectors)
+  CorpusController  — serves /api/v1/corpus and /api/v1/corpus/ui-config
+
+Frontend bootstrap:
+  main.js fetches /api/v1/corpus and /api/v1/corpus/ui-config → Vuex store
+  Vue mounts with the corpus and UI labels for the configured domain
 
 User search:
   SearchBar (300ms debounce, min 3 chars)
@@ -61,7 +68,7 @@ A manifest (`manifest.json`) stores a content hash per item: `sha256(wpp_id + it
 
 ## Quick Start
 
-End-to-end run on the bundled reference corpus. **Prerequisite:** `ANTHROPIC_API_KEY` environment variable. No AWS or Terraform needed.
+End-to-end run on any corpus. **Prerequisite:** `ANTHROPIC_API_KEY` environment variable.
 
 ```bash
 # Set up Python venv (Python 3.11+)
@@ -70,34 +77,30 @@ pip install -e .
 pip install -r fine-tuning/requirements.txt
 pip install -r test-harness/requirements.txt
 
-# 1. Generate synthetic training pairs from seed corpus
-autosearch generate --corpus test-harness/data/corpus.json --local
+# 1. Bring your own corpus.json + config.yaml (see examples/)
+#    Or use the bundled IT service catalogue example:
+EX=examples/it-service-catalogue
 
-# 2. Fine-tune
-autosearch train --local
+# 2. Run the full pipeline (generate -> train -> export -> embed -> ui-config)
+autosearch pipeline --corpus $EX/corpus.json --config $EX/config.yaml --local
 
-# 3. Export to ONNX
-autosearch export --local
+# 3. Start the Java backend pointing at the generated artefacts
+ARTS=output/it-service-catalogue
+mvn -f backend/autosearch-spring/pom.xml spring-boot:run \
+  -Dspring-boot.run.arguments="\
+    --autosearch.config-path=$EX/config.yaml \
+    --autosearch.model-path=$ARTS/artefacts/autosearch-embed.onnx \
+    --autosearch.tokenizer-path=$ARTS/artefacts/ \
+    --autosearch.embeddings-path=$ARTS/data-items.json \
+    --autosearch.corpus-path=$EX/corpus.json \
+    --autosearch.ui-config-path=$EX/corpus-ui.json"
 
-# 4. Pre-compute embeddings
-autosearch embed --corpus test-harness/data/corpus.json --local
-
-# Or run all steps at once:
-autosearch pipeline --corpus test-harness/data/corpus.json --local
-
-# 5. Evaluate OOTB baselines vs fine-tuned model
-autosearch evaluate \
-  --corpus test-harness/data/corpus.json \
-  --queries test-harness/data/test-queries.json \
-  --fine-tuned-model output/health-workforce/model/
-
-# 6. Start Java backend (standalone Spring Boot)
-mvn -f backend/autosearch-spring/pom.xml spring-boot:run
-
-# 7. Start Vue frontend (in a separate terminal)
+# 4. Start the Vue frontend (separate terminal)
 cd frontend && npm install && npm run dev
-# Opens at http://localhost:5173
+# Opens at http://localhost:5173 — no rebuild needed to switch corpora
 ```
+
+**Switch domains:** stop the backend, point the `-D` properties at a different example's artefacts, restart. The frontend fetches the corpus and UI labels from the backend on load, so no frontend rebuild is required.
 
 ---
 
@@ -160,12 +163,15 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 ## Using your own corpus
 
 1. Copy `config.yaml` to your repo root and update `corpus.id_field`, `corpus.group_field`, `corpus.name_field`, `corpus.description_field` to match your JSON keys. Set `name` and `pipeline.domain_description`.
-2. Update `frontend/src/corpusConfig.js` to mirror the same field names, and set `appTitle`, `appLede`, `suggestions`, `groupNames`.
-3. Supply your `corpus.json` (an array of objects with at least the four configured fields).
-4. Run `autosearch pipeline --corpus your-corpus.json --local`. The pipeline is delta-aware — only new or changed items get re-embedded.
-5. Optionally supply domain-specific `test-queries.json` and run `autosearch evaluate` to benchmark model quality.
+2. Supply your `corpus.json` (an array of objects with at least the four configured fields).
+3. Run `autosearch pipeline --corpus your-corpus.json --config your-config.yaml --local`. The pipeline is delta-aware — only new or changed items get re-embedded. The final step generates `corpus-ui.json` (UI title, lede, suggestions, group names) via Claude.
+4. Start the backend pointing `--autosearch.corpus-path` and `--autosearch.ui-config-path` at your generated files (see Quick Start).
+5. Optionally hand-edit `corpus-ui.json` to add `searchAriaLabel` or tune any LLM-generated label.
+6. Optionally supply domain-specific `test-queries.json` and run `autosearch evaluate` to benchmark model quality.
 
-See `examples/it-service-catalogue/` for a worked example with a corporate IT helpdesk corpus.
+See `examples/it-service-catalogue/` and `examples/health-workforce/` for worked examples.
+
+Note: `searchAriaLabel` is optional and not derived automatically by `ui-config` — supply it manually in `corpus-ui.json` if you want a custom value (default: "Search").
 
 ---
 
