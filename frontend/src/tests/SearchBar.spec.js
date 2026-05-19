@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { createStore } from 'vuex';
 import SearchBar from '../components/SearchBar.vue';
-import searchModule from '../src/stores/search.js';
+import searchModule from '../stores/search.js';
 
 function mountBar(actionOverrides = {}) {
   const store = createStore({

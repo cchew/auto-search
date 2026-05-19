@@ -56,9 +56,9 @@
 <script setup>
 import { computed } from 'vue';
 import { useStore } from 'vuex';
-import SearchBar from '../components/SearchBar.vue';
-import SearchResults from '../components/SearchResults.vue';
-import DataItemHighlight from '../components/DataItemHighlight.vue';
+import SearchBar from './components/SearchBar.vue';
+import SearchResults from './components/SearchResults.vue';
+import DataItemHighlight from './components/DataItemHighlight.vue';
 
 const store = useStore();
 const mode = computed(() => store.state.search.mode);
