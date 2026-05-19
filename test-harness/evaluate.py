@@ -66,8 +66,8 @@ def main() -> None:
         print(f"{name:<30} {r1:>10.3f} {mrr:>10.3f}")
         rows.append({"model": name, "recall_at_1": r1, "mrr_at_5": mrr})
 
-    results_dir = Path("results")
-    results_dir.mkdir(exist_ok=True)
+    results_dir = cfg.output_dir(local=True) / "results"
+    results_dir.mkdir(parents=True, exist_ok=True)
     today = date.today().isoformat()
     html_rows = "".join(
         f"<tr><td>{r['model']}</td><td>{r['recall_at_1']:.3f}</td><td>{r['mrr_at_5']:.3f}</td></tr>"
@@ -82,7 +82,7 @@ def main() -> None:
         writer = csv.DictWriter(f, fieldnames=["model", "recall_at_1", "mrr_at_5"])
         writer.writeheader()
         writer.writerows(rows)
-    print(f"\nSaved: results/report-{today}.html  results/scores-{today}.csv")
+    print(f"\nSaved: {results_dir}/report-{today}.html  {results_dir}/scores-{today}.csv")
 
 
 if __name__ == "__main__":

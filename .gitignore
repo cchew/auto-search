@@ -18,4 +18,3 @@ fine-tuning/output/
 frontend/dist/
 node_modules/
 output/
-# test-harness/results/ — unignored; evaluation reports committed as artefacts
