@@ -26,3 +26,16 @@ def test_cli_subcommands_exist():
     result = runner.invoke(cli, ["--help"])
     for cmd in ["generate", "train", "export", "embed", "evaluate", "pipeline"]:
         assert cmd in result.output
+
+
+def test_cli_has_ui_config_command():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["ui-config", "--help"])
+    assert result.exit_code == 0
+    assert "--corpus" in result.output
+
+
+def test_cli_subcommands_include_ui_config():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--help"])
+    assert "ui-config" in result.output

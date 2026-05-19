@@ -77,6 +77,35 @@ def evaluate(corpus, queries, config, fine_tuned_model):
     _run(HARNESS / "evaluate.py", args)
 
 
+@cli.command(name="ui-config")
+@click.option("--corpus", required=True, help="Path to corpus.json")
+@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--local", is_flag=True, help="Write output locally instead of S3")
+def ui_config(corpus, config, local):
+    """Derive UI labels (title, lede, suggestions, group names) for the corpus."""
+    import json
+    from pathlib import Path
+    import anthropic
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+    from autosearch.config import AutoSearchConfig
+    from autosearch.ui_config import derive_ui_config
+
+    cfg = AutoSearchConfig.from_yaml(Path(config))
+    corpus_items = json.loads(Path(corpus).read_text())
+    client = anthropic.Anthropic()  # uses ANTHROPIC_API_KEY from env
+    ui = derive_ui_config(corpus_items, cfg, client)
+
+    out_dir = cfg.output_dir(local)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "corpus-ui.json"
+    out_path.write_text(json.dumps(ui, indent=2))
+    click.echo(f"Wrote {out_path}")
+
+
 @cli.command()
 @click.option("--corpus", required=True, help="Path to corpus.json")
 @click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
