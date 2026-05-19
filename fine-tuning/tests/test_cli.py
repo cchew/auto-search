@@ -39,3 +39,9 @@ def test_cli_subcommands_include_ui_config():
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
     assert "ui-config" in result.output
+
+
+def test_pipeline_includes_skip_ui_config_flag():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["pipeline", "--help"])
+    assert "--skip-ui-config" in result.output
