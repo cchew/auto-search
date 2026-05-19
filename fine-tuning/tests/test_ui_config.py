@@ -56,6 +56,10 @@ def test_derive_ui_config_builds_expected_shape(tmp_path):
         "Unlock my account",
         "Wi-fi setup help",
     ]
+    assert ui["idField"] == cfg.corpus.id_field
+    assert ui["groupField"] == cfg.corpus.group_field
+    assert ui["nameField"] == cfg.corpus.name_field
+    assert ui["descriptionField"] == cfg.corpus.description_field
 
 
 def test_derive_ui_config_handles_unknown_group_ids(tmp_path):

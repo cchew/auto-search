@@ -78,4 +78,8 @@ def derive_ui_config(
         "appLede": labels["appLede"],
         "suggestions": suggestions,
         "groupNames": group_names,
+        "idField": cfg.corpus.id_field,
+        "groupField": cfg.corpus.group_field,
+        "nameField": cfg.corpus.name_field,
+        "descriptionField": cfg.corpus.description_field,
     }
