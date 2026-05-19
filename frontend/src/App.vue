@@ -54,19 +54,20 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useStore } from 'vuex';
 import SearchBar from '../components/SearchBar.vue';
 import SearchResults from '../components/SearchResults.vue';
 import DataItemHighlight from '../components/DataItemHighlight.vue';
-import corpus from '../../test-harness/data/corpus.json';
-import corpusConfig from './corpusConfig.js';
 
 const store = useStore();
 const mode = computed(() => store.state.search.mode);
-const appTitle = corpusConfig.appTitle;
-const appLede = corpusConfig.appLede;
-const suggestions = corpusConfig.suggestions ?? [];
+const ui = computed(() => store.state.corpus.ui);
+const items = computed(() => store.state.corpus.items);
+
+const appTitle = computed(() => ui.value.appTitle);
+const appLede = computed(() => ui.value.appLede);
+const suggestions = computed(() => ui.value.suggestions ?? []);
 
 function useSuggestion(phrase) {
   store.dispatch('search/query', phrase);
@@ -74,25 +75,19 @@ function useSuggestion(phrase) {
 
 const wpps = computed(() => {
   const map = new Map();
-  for (const item of corpus) {
-    const gid = item[corpusConfig.groupField];
-    const gname = corpusConfig.groupNames[gid] ?? `Group ${gid}`;
+  for (const item of items.value) {
+    const gid = item[ui.value.groupField];
+    const gname = ui.value.groupNames[gid] ?? `Group ${gid}`;
     if (!map.has(gid)) {
       map.set(gid, { id: gid, name: gname, items: [] });
     }
     map.get(gid).items.push({
-      id: item[corpusConfig.idField],
-      name: item[corpusConfig.nameField],
-      description: item[corpusConfig.descriptionField] ?? '',
+      id: item[ui.value.idField],
+      name: item[ui.value.nameField],
+      description: item[ui.value.descriptionField] ?? '',
     });
   }
   return [...map.values()].sort((a, b) => a.id - b.id);
-});
-
-onMounted(() => {
-  const names = {};
-  for (const wpp of wpps.value) names[wpp.id] = wpp.name;
-  store.commit('search/setGroupNames', names);
 });
 </script>
 

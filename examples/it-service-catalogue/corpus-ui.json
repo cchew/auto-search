@@ -1,0 +1,25 @@
+{
+  "appTitle": "IT Helpdesk Request Catalogue",
+  "appLede": "Search and submit requests for account management, hardware support, access provisioning, applications, networking, incidents, data services, and security.",
+  "suggestions": [
+    "password reset",
+    "how do I get a new laptop",
+    "MFA enrollment",
+    "set up access for a new contractor"
+  ],
+  "groupNames": {
+    "1": "Account & Authentication",
+    "2": "Hardware & Devices",
+    "3": "Onboarding & Access",
+    "4": "Applications & Software",
+    "5": "Networking & Connectivity",
+    "6": "General Support & Incidents",
+    "7": "Data & Storage",
+    "8": "Security & Compliance"
+  },
+  "idField": "service_id",
+  "groupField": "category_id",
+  "nameField": "title",
+  "descriptionField": "summary",
+  "searchAriaLabel": "Search IT services"
+}

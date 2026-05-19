@@ -1,6 +1,3 @@
-import corpus from '../../../test-harness/data/corpus.json';
-import corpusConfig from '../corpusConfig.js';
-
 /** @typedef {'idle' | 'loading' | 'done' | 'error'} SearchStatus */
 /** @typedef {'semantic' | 'keyword'} SearchMode */
 /** @typedef {{ groupId: number, itemId: number, itemName: string, score: number }} SearchResultItem */
@@ -14,19 +11,19 @@ function readMode() {
   return params.get('mode') === 'keyword' ? 'keyword' : 'semantic';
 }
 
-function keywordSearch(queryText) {
+function keywordSearch(queryText, corpus, ui) {
   const q = queryText.toLowerCase().trim();
   const matches = [];
   for (const item of corpus) {
-    const name = (item[corpusConfig.nameField] || '').toLowerCase();
+    const name = (item[ui.nameField] || '').toLowerCase();
     const idx = name.indexOf(q);
     if (idx >= 0) matches.push({ item, idx });
   }
-  matches.sort((a, b) => a.idx - b.idx || a.item[corpusConfig.nameField].length - b.item[corpusConfig.nameField].length);
+  matches.sort((a, b) => a.idx - b.idx || a.item[ui.nameField].length - b.item[ui.nameField].length);
   return matches.slice(0, 5).map(({ item }) => ({
-    groupId: item[corpusConfig.groupField],
-    itemId: item[corpusConfig.idField],
-    itemName: item[corpusConfig.nameField],
+    groupId: item[ui.groupField],
+    itemId: item[ui.idField],
+    itemName: item[ui.nameField],
     score: 1,
   }));
 }
@@ -39,7 +36,6 @@ export default {
     /** @type {SearchResultItem[]} */ results: [],
     /** @type {SearchStatus} */ status: 'idle',
     /** @type {SearchMode} */ mode: readMode(),
-    /** @type {Object.<number, string>} */ groupNames: {},
   }),
 
   mutations: {
@@ -47,11 +43,10 @@ export default {
     setResults(state, results) { state.results = results; },
     setStatus(state, status) { state.status = status; },
     setMode(state, mode) { state.mode = mode; },
-    setGroupNames(state, names) { state.groupNames = names; },
   },
 
   actions: {
-    async query({ commit, state }, queryText) {
+    async query({ commit, state, rootState }, queryText) {
       if (!queryText || queryText.trim().length < 3) {
         commit('setResults', []);
         commit('setStatus', 'idle');
@@ -62,7 +57,7 @@ export default {
 
       if (state.mode === 'keyword') {
         commit('setStatus', 'loading');
-        commit('setResults', keywordSearch(queryText));
+        commit('setResults', keywordSearch(queryText, rootState.corpus.items, rootState.corpus.ui));
         commit('setStatus', 'done');
         return;
       }

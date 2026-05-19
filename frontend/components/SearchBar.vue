@@ -36,11 +36,9 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useStore } from 'vuex';
-import corpusConfig from '../src/corpusConfig.js';
-
-const searchAriaLabel = corpusConfig.searchAriaLabel;
 
 const store = useStore();
+const searchAriaLabel = computed(() => store.state.corpus.ui.searchAriaLabel ?? 'Search');
 const results = computed(() => store.state.search.results);
 const localQuery = ref('');
 const focused = ref(false);
