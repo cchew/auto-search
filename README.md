@@ -1,10 +1,21 @@
 # Auto Search
 
-Semantic search for structured data item catalogues. Type a natural-language query; jump straight to the matching item across any report set.
+Domain-portable semantic search for structured data item catalogues. Drop in a `corpus.json` + `config.yaml`, run the pipeline, restart the backend — the same Vue frontend serves any domain with no rebuild. UI labels (title, lede, suggestions, group names) are derived per-domain by Claude.
 
-A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on a 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
+A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on the reference 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
 
 ![Search dropdown](presentation/screenshots/search-dropdown.png)
+
+## Bundled examples
+
+Two worked domains ship in `examples/`. Both are fully runnable from the repo with no further configuration.
+
+| Example | Items | Field shape | Use it to... |
+|---|---|---|---|
+| [`health-workforce`](examples/health-workforce/) | 350 | `item_id` / `wpp_id` / `name` / `description` | Reproduce the published evaluation results; the canonical reference corpus |
+| [`it-service-catalogue`](examples/it-service-catalogue/) | 53 | `service_id` / `category_id` / `title` / `summary` | Prove portability: same frontend, different field names, different domain language |
+
+Switching between them at runtime is a backend restart with different `-D` paths (see [Quick Start](#quick-start)). The frontend fetches the corpus and UI labels from the backend on every page load.
 
 ---
 
