@@ -434,7 +434,7 @@ Recall@1 = 0.85 means 1 in 7 queries miss the top hit. Top-5 dropdown surfaces n
 
 ## Lessons Learnt
 
-- **Threshold tuning matters more than the model** — `minScore = 0.3` set by eyeballing results
+- **Threshold tuning matters more than the model** — `minScore = 0.4` set by eyeballing results
 - **LLM holdout overstates performance** — weaker secondary set results; real-user logs are still a follow-up
 - **Batch size affects retrieval training** — `MultipleNegativesRankingLoss` needs ≥32 to converge cleanly
 - **Embeddings are not free RAM** — 50k items = 75 MB before indexing

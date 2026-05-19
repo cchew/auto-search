@@ -88,10 +88,21 @@ A manifest (`manifest.json`) stores a content hash per item: `sha256(wpp_id + it
 
 ## Quick Start
 
-End-to-end run on any corpus. **Prerequisite:** `ANTHROPIC_API_KEY` environment variable.
+### Prerequisites
+
+| Tool | Version |
+|---|---|
+| Python | 3.11+ |
+| Java | 17+ |
+| Maven | 3.8+ |
+| Node | 18+ |
+| npm | 9+ |
+| `ANTHROPIC_API_KEY` | required for the pipeline |
+
+### End-to-end run on the bundled IT example
 
 ```bash
-# Set up Python venv (Python 3.11+)
+# Set up Python venv
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 pip install -r fine-tuning/requirements.txt
@@ -113,12 +124,14 @@ mvn -f backend/autosearch-spring/pom.xml spring-boot:run \
     --autosearch.tokenizer-path=$ARTS/artefacts/ \
     --autosearch.embeddings-path=$ARTS/data-items.json \
     --autosearch.corpus-path=$EX/corpus.json \
-    --autosearch.ui-config-path=$EX/corpus-ui.json"
+    --autosearch.ui-config-path=$ARTS/corpus-ui.json"
 
 # 4. Start the Vue frontend (separate terminal)
 cd frontend && npm install && npm run dev
 # Opens at http://localhost:5173 — no rebuild needed to switch corpora
 ```
+
+Note: `$ARTS/corpus-ui.json` (pipeline output) is used in step 3, not the pre-shipped `$EX/corpus-ui.json`. The bundled examples include both — pipeline-generated artefacts are what change per-domain.
 
 **Switch domains:** stop the backend, point the `-D` properties at a different example's artefacts, restart. The frontend fetches the corpus and UI labels from the backend on load, so no frontend rebuild is required.
 
@@ -126,7 +139,7 @@ cd frontend && npm install && npm run dev
 
 ## Corpus format
 
-`corpus.json` is the only input the pipeline needs:
+`corpus.json` is the only input the pipeline needs. Field names are configurable in `config.yaml`; the example below uses the health-workforce mapping (`item_id`, `wpp_id`, `name`, `description`).
 
 ```json
 [
@@ -139,12 +152,14 @@ cd frontend && npm install && npm run dev
 ]
 ```
 
-| Field | Required | Notes |
-|---|---|---|
-| `item_id` | Yes | Integer. Unique. Stable — changing breaks manifest delta. |
-| `wpp_id` | Yes | Integer. Stable parent report set identifier. |
-| `name` | Yes | Display name. Used for embedding. |
-| `description` | Recommended | Significantly improves recall. Empty string if unavailable. |
+| Logical field | Config key | Required | Notes |
+|---|---|---|---|
+| Item identifier | `corpus.id_field` | Yes | Integer. Unique. Stable — changing breaks manifest delta. |
+| Group identifier | `corpus.group_field` | Yes | Integer. Stable parent group/category identifier. |
+| Display name | `corpus.name_field` | Yes | Used for embedding. |
+| Description | `corpus.description_field` | Recommended | Significantly improves recall. Empty string if unavailable. |
+
+Each `config.yaml` maps these logical fields to concrete JSON keys. Health-workforce uses `item_id/wpp_id/name/description`; IT service catalogue uses `service_id/category_id/title/summary`. See the bundled examples.
 
 A reference corpus of ~350 synthetic items (health workforce planning concepts) ships in `examples/health-workforce/corpus.json`. To adapt to a different domain, see [Using your own corpus](#using-your-own-corpus).
 
@@ -176,7 +191,7 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 | `corpus.json` provided externally | Decouples pipeline from source DB; any team can supply the file |
 | No external vector DB | 350 items fits trivially in JVM memory; removes operational dependency |
 | `--local` flag on all pipeline scripts | Full end-to-end proof with only `ANTHROPIC_API_KEY`; no AWS until production |
-| `minScore = 0.3` confidence threshold | Suppresses low-confidence results rather than returning misleading matches |
+| `minScore = 0.4` confidence threshold | Suppresses low-confidence results rather than returning misleading matches |
 
 ---
 
