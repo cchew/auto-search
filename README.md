@@ -182,7 +182,7 @@ Fine-tuning delivers a **+10pp Recall@1** and **+6pp MRR@5** lift over the best 
 
 ## Using your own corpus
 
-1. Copy `config.yaml` to your repo root and update `corpus.id_field`, `corpus.group_field`, `corpus.name_field`, `corpus.description_field` to match your JSON keys. Set `name` and `pipeline.domain_description`.
+1. Copy `examples/health-workforce/config.yaml` (or any example's config) as a starting point, update `corpus.id_field`, `corpus.group_field`, `corpus.name_field`, `corpus.description_field` to match your JSON keys. Set `name` and `pipeline.domain_description`. Place it wherever you like and always pass `--config <path>` to the CLI.
 2. Supply your `corpus.json` (an array of objects with at least the four configured fields).
 3. Run `autosearch pipeline --corpus your-corpus.json --config your-config.yaml --local`. The pipeline is delta-aware — only new or changed items get re-embedded. The final step generates `corpus-ui.json` (UI title, lede, suggestions, group names) via Claude.
 4. Start the backend pointing `--autosearch.corpus-path` and `--autosearch.ui-config-path` at your generated files (see Quick Start).

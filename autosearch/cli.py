@@ -20,7 +20,7 @@ def cli():
 
 @cli.command()
 @click.option("--corpus", required=True, help="Path to corpus.json")
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True, help="Write output locally instead of S3")
 def generate(corpus, config, local):
     """Generate synthetic training pairs from corpus."""
@@ -31,7 +31,7 @@ def generate(corpus, config, local):
 
 
 @cli.command()
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True)
 def train(config, local):
     """Fine-tune the embedding model on generated pairs."""
@@ -42,7 +42,7 @@ def train(config, local):
 
 
 @cli.command()
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True)
 def export(config, local):
     """Export fine-tuned model to ONNX + INT8 quantisation."""
@@ -54,7 +54,7 @@ def export(config, local):
 
 @cli.command()
 @click.option("--corpus", required=True, help="Path to corpus.json")
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True)
 def embed(corpus, config, local):
     """Precompute and store corpus embeddings."""
@@ -67,7 +67,7 @@ def embed(corpus, config, local):
 @cli.command()
 @click.option("--corpus", required=True, help="Path to corpus.json")
 @click.option("--queries", required=True, help="Path to test-queries.json")
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--fine-tuned-model", default=None, help="Path to fine-tuned model directory")
 def evaluate(corpus, queries, config, fine_tuned_model):
     """Evaluate model quality against test queries."""
@@ -79,7 +79,7 @@ def evaluate(corpus, queries, config, fine_tuned_model):
 
 @cli.command(name="ui-config")
 @click.option("--corpus", required=True, help="Path to corpus.json")
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True, help="Write output locally instead of S3")
 def ui_config(corpus, config, local):
     """Derive UI labels (title, lede, suggestions, group names) for the corpus."""
@@ -108,7 +108,7 @@ def ui_config(corpus, config, local):
 
 @cli.command()
 @click.option("--corpus", required=True, help="Path to corpus.json")
-@click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
+@click.option("--config", default=str(REPO_ROOT / "examples" / "health-workforce" / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True)
 @click.option("--skip-train", is_flag=True, help="Skip model training (re-embed only)")
 @click.option("--skip-ui-config", is_flag=True, help="Skip generating frontend UI labels")
