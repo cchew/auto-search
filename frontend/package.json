@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "bash e2e/portability.sh"
   },
   "dependencies": {
     "vue": "^3.4.0",
