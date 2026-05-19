@@ -135,7 +135,7 @@ cd frontend && npm install && npm run dev
 | `name` | Yes | Display name. Used for embedding. |
 | `description` | Recommended | Significantly improves recall. Empty string if unavailable. |
 
-A reference corpus of ~350 synthetic items (health workforce planning concepts) ships in `test-harness/data/corpus.json`. To adapt to a different domain, replace it and re-run the pipeline — see [Using your own corpus](#using-your-own-corpus).
+A reference corpus of ~350 synthetic items (health workforce planning concepts) ships in `examples/health-workforce/corpus.json`. To adapt to a different domain, see [Using your own corpus](#using-your-own-corpus).
 
 ---
 
