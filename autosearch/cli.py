@@ -111,11 +111,15 @@ def ui_config(corpus, config, local):
 @click.option("--config", default=str(REPO_ROOT / "config.yaml"), help="Path to config.yaml")
 @click.option("--local", is_flag=True)
 @click.option("--skip-train", is_flag=True, help="Skip model training (re-embed only)")
-def pipeline(corpus, config, local, skip_train):
-    """Run the full pipeline: generate -> train -> export -> embed."""
+@click.option("--skip-ui-config", is_flag=True, help="Skip generating frontend UI labels")
+@click.pass_context
+def pipeline(ctx, corpus, config, local, skip_train, skip_ui_config):
+    """Run the full pipeline: generate -> train -> export -> embed -> ui-config."""
     base = ["--config", config] + (["--local"] if local else [])
     _run(FINE_TUNING / "generate_pairs.py", ["--corpus", corpus] + base)
     if not skip_train:
         _run(FINE_TUNING / "train.py", base)
         _run(FINE_TUNING / "export_onnx.py", base)
     _run(FINE_TUNING / "precompute_embeddings.py", ["--corpus", corpus] + base)
+    if not skip_ui_config:
+        ctx.invoke(ui_config, corpus=corpus, config=config, local=local)
