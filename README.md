@@ -8,6 +8,15 @@ A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.8
 
 ---
 
+## Version history
+
+| Version | Description |
+|---|---|
+| v0.2.0 | Tier-2 portability: backend serves corpus + UI config via REST; frontend bootstraps from `/api/v1/corpus` and `/api/v1/corpus/ui-config`; `autosearch ui-config` CLI derives UI labels via Claude. New domain = `corpus.json` + `config.yaml` + `autosearch pipeline` + backend restart. No frontend rebuild. Playwright E2E (`npm run test:e2e`) proves the swap across health-workforce and it-service-catalogue. |
+| v0.1.0 | Initial release: fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX) served in-JVM via Spring Boot + Vue 3 frontend. Offline pipeline (generate → train → export → embed) with delta-aware manifest. Recall@1 0.85 / MRR@5 0.91 on the 350-item health workforce planning corpus. |
+
+---
+
 ## Problem
 
 Users need to know which Report Set a measure or dimension lives under before they can find it. The current workflow is manual: navigate report sets, Ctrl-F for the name, fail if your search term differs from the data item name. The domain uses acronyms and specialist terminology that vary by user background (e.g. "GP FTE", "GP full time equivalent", "doctor hours").
