@@ -109,14 +109,18 @@ pip install -r fine-tuning/requirements.txt
 pip install -r test-harness/requirements.txt
 
 # 1. Bring your own corpus.json + config.yaml (see examples/)
-#    Or use the bundled IT service catalogue example:
-EX=examples/it-service-catalogue
+#    Or use the bundled IT service catalogue example.
+#    Paths must be absolute — ONNX Runtime resolves the model path
+#    against its own working directory, not the maven invocation dir.
+EX=$(pwd)/examples/it-service-catalogue
+ARTS=$(pwd)/output/it-service-catalogue
 
-# 2. Run the full pipeline (generate -> train -> export -> embed -> ui-config)
+# 2. Run the full pipeline (generate -> train -> export -> embed)
 autosearch pipeline --corpus $EX/corpus.json --config $EX/config.yaml --local
 
-# 3. Start the Java backend pointing at the generated artefacts
-ARTS=output/it-service-catalogue
+# 3. Start the Java backend pointing at the generated artefacts.
+#    ui-config-path uses the pre-shipped $EX/corpus-ui.json — see note below
+#    for regenerating it for your own corpus.
 mvn -f backend/autosearch-spring/pom.xml spring-boot:run \
   -Dspring-boot.run.arguments="\
     --autosearch.allowed-root=$(pwd) \
@@ -125,16 +129,18 @@ mvn -f backend/autosearch-spring/pom.xml spring-boot:run \
     --autosearch.tokenizer-path=$ARTS/artefacts/ \
     --autosearch.embeddings-path=$ARTS/data-items.json \
     --autosearch.corpus-path=$EX/corpus.json \
-    --autosearch.ui-config-path=$ARTS/corpus-ui.json"
+    --autosearch.ui-config-path=$EX/corpus-ui.json"
 
 # 4. Start the Vue frontend (separate terminal)
 cd frontend && npm install && npm run dev
 # Opens at http://localhost:5173 — no rebuild needed to switch corpora
 ```
 
-Note: `$ARTS/corpus-ui.json` (pipeline output) is used in step 3, not the pre-shipped `$EX/corpus-ui.json`. The bundled examples include both — pipeline-generated artefacts are what change per-domain.
+**Switching to the health-workforce example:** same command with `EX=$(pwd)/examples/health-workforce` and `ARTS=$(pwd)/output/health-workforce`.
 
-`autosearch.allowed-root` confines the file-serving endpoints to a safe directory subtree — the backend will refuse to start if any configured path (corpus, ui-config, model, embeddings, tokenizer) resolves outside it. Set it to the repo root for the default flow, or to a parent directory that contains all your artefact paths.
+Note on `corpus-ui.json`: both bundled examples ship a pre-built `corpus-ui.json` (the title, lede, suggestions, and group labels rendered by the frontend). To regenerate it for your own corpus, run `autosearch ui-config --corpus $EX/corpus.json --config $EX/config.yaml` — this needs `ANTHROPIC_API_KEY` and writes to `$ARTS/corpus-ui.json`. The main `autosearch pipeline` command does not generate this file.
+
+`autosearch.allowed-root` confines the file-serving endpoints to a safe directory subtree — the backend will refuse to start if any configured path (corpus, ui-config, model, embeddings, tokenizer) resolves outside it. The repo root works for the default flow above; widen it (e.g. to the parent directory) if your artefacts live elsewhere.
 
 **Switch domains:** stop the backend, point the `-D` properties at a different example's artefacts, restart. The frontend fetches the corpus and UI labels from the backend on load, so no frontend rebuild is required.
 
