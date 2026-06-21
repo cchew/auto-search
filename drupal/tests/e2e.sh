@@ -102,29 +102,63 @@ echo "── Browser E2E tests  ($FRONTEND) ────────────
 
 "$PW" open "$FRONTEND" 2>/dev/null
 
-# Page loads with search input (aria role=combobox)
+# ── 1. Page load ─────────────────────────────────────────────
 snap=$("$PW" --raw snapshot 2>/dev/null)
-check "Search combobox visible on load" "$snap" 'combobox'
-check "Suggestion chips visible on load" "$snap" 'Primary care doctor'
+check "Page title visible on load"        "$snap" 'Find the data item'
+check "Search box visible on load"        "$snap" 'combobox'
+check "Suggestion chips visible on load"  "$snap" 'Primary care doctor'
+check "Corpus list renders on load"       "$snap" 'GP Workforce'
 
-# Click the search input by CSS selector (aria-label matching is unreliable in
-# playwright-cli for inputs; role=combobox is the stable hook), then type the query.
-"$PW" click "input[role=combobox]" 2>/dev/null
-"$PW" type "GP staffing" 2>/dev/null
+# ── 2. Semantic search — results show real content (not field mapping errors) ─
+"$PW" fill "input[role=combobox]" "GP staffing" 2>/dev/null
 sleep 2
 snap=$("$PW" --raw snapshot 2>/dev/null)
+check "Results dropdown visible"               "$snap" '"Search results"'
+check "Results show item name"                 "$snap" "GP FTE"
+check "Results show real group name"           "$snap" "GP Workforce"
+check "Results do NOT show GROUP UNDEFINED"    "$(echo "$snap" | grep -c 'UNDEFINED' || true)" "0"
 
-# Verify the results dropdown rendered (SearchResults mounts a role=listbox ul)
-check "Results dropdown rendered"    "$snap" '"Search results"'
-# Verify items have proper names (field mapping group_id→groupId, name→itemName)
-check "Results contain GP FTE"       "$snap" "GP FTE"
-check "Results contain group label"  "$snap" "GP Workforce"
+# ── 3. Demo chip queries — all must return results (regression) ───────────────
+"$PW" press "Escape" 2>/dev/null; sleep 1
 
-# Clear via Escape and verify chips reappear
-"$PW" press "Escape" 2>/dev/null
+for chip in \
+  "Primary care doctor staffing levels" \
+  "How many aged care staff are we employing?" \
+  "public hospital medical officer staffing levels" \
+  "regional breakdown of unnecessary hospital admissions"; do
+  "$PW" fill "input[role=combobox]" "$chip" 2>/dev/null
+  sleep 2
+  snap=$("$PW" --raw snapshot 2>/dev/null)
+  check "Chip query returns results: ${chip:0:40}…" "$snap" '"Search results"'
+  check "Chip results not GROUP UNDEFINED: ${chip:0:30}…" "$(echo "$snap" | grep -c 'UNDEFINED' || true)" "0"
+  "$PW" press "Escape" 2>/dev/null; sleep 1
+done
+
+# ── 4. Escape clears results and restores chips ───────────────────────────────
+snap=$("$PW" --raw snapshot 2>/dev/null)
+check "Chips restored after Escape" "$snap" 'Primary care doctor'
+
+# ── 5. Keyword mode — badge switches, results appear ─────────────────────────
+"$PW" open "${FRONTEND}?mode=keyword" 2>/dev/null; sleep 1
+snap=$("$PW" --raw snapshot 2>/dev/null)
+check "Keyword mode badge visible"  "$snap" 'Keyword search'
+
+"$PW" fill "input[role=combobox]" "GP FTE" 2>/dev/null
 sleep 1
 snap=$("$PW" --raw snapshot 2>/dev/null)
-check "Chips still visible after clear" "$snap" 'Primary care doctor'
+check "Keyword search returns results"          "$snap" '"Search results"'
+check "Keyword results show real group names"   "$snap" "GP Workforce"
+check "Keyword results not GROUP UNDEFINED"     "$(echo "$snap" | grep -c 'UNDEFINED' || true)" "0"
+
+# ── 6. Result selection — item highlighted in corpus list ────────────────────
+"$PW" open "$FRONTEND" 2>/dev/null; sleep 1
+"$PW" fill "input[role=combobox]" "GP staffing" 2>/dev/null
+sleep 2
+"$PW" click "[role=option]:first-child" 2>/dev/null
+sleep 1
+snap=$("$PW" --raw snapshot 2>/dev/null)
+check "Corpus list still visible after selection"  "$snap" 'GP Workforce'
+check "Selected item present in page"              "$snap" 'GP FTE'
 
 "$PW" close 2>/dev/null
 
