@@ -269,7 +269,7 @@ html, body {
 /* ---------- Main ---------- */
 
 .app-main {
-  padding: 3rem 2rem 5rem;
+  padding: 1rem 2rem 5rem;
   max-width: 1100px;
   margin: 0 auto;
 }

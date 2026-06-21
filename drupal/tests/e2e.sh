@@ -67,7 +67,7 @@ check "GET /corpus/ui-config has appTitle"    "$r" "appTitle"
 check "GET /corpus/ui-config has idField"     "$r" "idField"
 check "GET /corpus/ui-config has groupNames"  "$r" "groupNames"
 
-# Search — valid query
+# Search — valid query (GP term)
 r=$(curl -sf -X POST "$BACKEND/api/v1/search" \
      -H 'Content-Type: application/json' \
      -d '{"query":"GP staffing","topK":3}')
@@ -79,6 +79,18 @@ fields=$(echo "$r" | python3 -c "import json,sys; d=json.load(sys.stdin); print(
 check "POST /search result has group_id"  "$fields" "group_id"
 check "POST /search result has item_id"   "$fields" "item_id"
 check "POST /search result has name"      "$fields" "name"
+
+# Search — demo chip queries (regression: all must return at least one result)
+for query in \
+  "primary care doctor staffing levels" \
+  "How many aged care staff are we employing" \
+  "public hospital medical officer staffing levels" \
+  "regional breakdown of unnecessary hospital admissions"; do
+  r=$(curl -sf -X POST "$BACKEND/api/v1/search" \
+       -H 'Content-Type: application/json' \
+       -d "{\"query\":\"$query\",\"topK\":3}")
+  check "POST /search returns result for: $query" "$r" '"name"'
+done
 
 # Search — empty query → 400
 status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BACKEND/api/v1/search" \

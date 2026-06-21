@@ -26,4 +26,4 @@ parameters:
   autosearch.embeddings_path: 'modules/custom/autosearch/model/embeddings.json'
   autosearch.corpus_path: 'modules/custom/autosearch/model/corpus.json'
   autosearch.ui_config_path: 'modules/custom/autosearch/model/ui-config.json'
-  autosearch.min_score: 0.45
+  autosearch.min_score: 0.38
