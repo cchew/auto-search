@@ -1,0 +1,12 @@
+autosearch_app:
+  version: VERSION
+  js:
+    dist/autosearch.js:
+      minified: true
+      preprocess: false
+      attributes:
+        type: module
+  css:
+    theme:
+      dist/autosearch.css:
+        preprocess: false

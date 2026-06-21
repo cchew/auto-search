@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @file
+ * Auto Search module — semantic search via in-process ONNX embeddings.
+ */

@@ -1,0 +1,7 @@
+name: Auto Search
+type: module
+description: 'Semantic search via ONNX-native sentence embeddings — no external API, no sidecar service.'
+package: Custom
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:serialization

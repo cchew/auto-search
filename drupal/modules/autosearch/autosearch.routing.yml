@@ -1,0 +1,39 @@
+autosearch.app:
+  path: '/autosearch'
+  defaults:
+    _controller: 'Drupal\autosearch\Controller\AppController::page'
+    _title: 'Auto Search'
+  requirements:
+    _access: 'TRUE'
+
+autosearch.search:
+  path: '/api/v1/search'
+  defaults:
+    _controller: 'Drupal\autosearch\Controller\SearchController::search'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+autosearch.search_health:
+  path: '/api/v1/search/health'
+  defaults:
+    _controller: 'Drupal\autosearch\Controller\SearchController::health'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+
+autosearch.corpus:
+  path: '/api/v1/corpus'
+  defaults:
+    _controller: 'Drupal\autosearch\Controller\CorpusController::corpus'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+
+autosearch.corpus_ui_config:
+  path: '/api/v1/corpus/ui-config'
+  defaults:
+    _controller: 'Drupal\autosearch\Controller\CorpusController::uiConfig'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'

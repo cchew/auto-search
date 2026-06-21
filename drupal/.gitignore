@@ -1,0 +1,6 @@
+modules/autosearch/model/
+tests/parity/reference.json
+tests/node_modules/
+tests/package-lock.json
+tests/screenshots/
+.playwright-cli/

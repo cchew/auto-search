@@ -1,0 +1,29 @@
+services:
+  autosearch.tokenizer:
+    class: Drupal\autosearch\BertTokenizer
+    arguments:
+      - '%autosearch.vocab_path%'
+    lazy: true
+
+  autosearch.embedding:
+    class: Drupal\autosearch\EmbeddingService
+    arguments:
+      - '@autosearch.tokenizer'
+      - '%autosearch.model_path%'
+    lazy: true
+
+  autosearch.similarity:
+    class: Drupal\autosearch\SimilarityService
+    arguments:
+      - '%autosearch.embeddings_path%'
+      - '%autosearch.min_score%'
+      - '%autosearch.ui_config_path%'
+    lazy: true
+
+parameters:
+  autosearch.vocab_path: 'modules/custom/autosearch/model/vocab.txt'
+  autosearch.model_path: 'modules/custom/autosearch/model/autosearch-embed.onnx'
+  autosearch.embeddings_path: 'modules/custom/autosearch/model/embeddings.json'
+  autosearch.corpus_path: 'modules/custom/autosearch/model/corpus.json'
+  autosearch.ui_config_path: 'modules/custom/autosearch/model/ui-config.json'
+  autosearch.min_score: 0.45

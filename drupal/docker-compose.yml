@@ -1,0 +1,36 @@
+services:
+  drupal:
+    build:
+      context: .
+      dockerfile: Dockerfile.php
+    ports:
+      - "8080:80"
+    environment:
+      DRUPAL_TRUSTED_HOST_PATTERNS: '^localhost$$'
+    volumes:
+      - ./modules/autosearch:/var/www/html/modules/custom/autosearch
+      - drupal_files:/var/www/html/sites/default/files
+      - drupal_settings:/var/www/html/sites/default
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:10.11
+    command: --skip-ssl
+    environment:
+      MYSQL_ROOT_PASSWORD: drupal
+      MYSQL_DATABASE: drupal
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--skip-ssl"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  drupal_files:
+  drupal_settings:
+  db_data:
