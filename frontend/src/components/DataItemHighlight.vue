@@ -19,6 +19,9 @@ function applyHighlight(itemId) {
   // Force reflow so re-highlighting the same element restarts the animation
   void el.offsetHeight;
 
+  const header = document.querySelector('.app-header');
+  const headerH = header ? header.getBoundingClientRect().height : 0;
+  el.style.scrollMarginTop = (headerH + 24) + 'px';
   el.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
   el.classList.add('search-highlight');
   highlightTimer = setTimeout(() => el.classList.remove('search-highlight'), 3000);

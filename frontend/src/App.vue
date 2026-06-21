@@ -345,9 +345,6 @@ html, body {
 
 /* ---------- Highlight (used by DataItemHighlight.vue) ---------- */
 
-.data-item {
-  scroll-margin-top: 320px;
-}
 
 .search-highlight {
   background: var(--accent-soft);
