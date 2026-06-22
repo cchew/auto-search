@@ -70,7 +70,13 @@ export default {
           body: JSON.stringify({ query: queryText, topK: 5 }),
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        commit('setResults', await response.json());
+        const raw = await response.json();
+        commit('setResults', raw.map(r => ({
+          groupId: r.group_id,
+          itemId: r.item_id,
+          itemName: r.name,
+          score: r.score,
+        })));
         commit('setStatus', 'done');
       } catch (err) {
         console.error('[search] query failed:', err);

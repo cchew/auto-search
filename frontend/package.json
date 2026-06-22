@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:drupal": "vite build --config vite.drupal.config.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "bash e2e/portability.sh"
