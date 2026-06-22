@@ -29,6 +29,16 @@
         <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
       </svg>
     </button>
+    <svg
+      v-else-if="status === 'loading'"
+      class="searchbar-spinner"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="28 56" stroke-linecap="round" />
+    </svg>
     <kbd v-else class="searchbar-kbd" aria-hidden="true">Esc</kbd>
   </div>
 </template>
@@ -40,6 +50,7 @@ import { useStore } from 'vuex';
 const store = useStore();
 const searchAriaLabel = computed(() => store.state.corpus.ui.searchAriaLabel ?? 'Search');
 const results = computed(() => store.state.search.results);
+const status = computed(() => store.state.search.status);
 const localQuery = ref('');
 const focused = ref(false);
 
@@ -131,5 +142,15 @@ function onClear() {
   border-radius: 5px;
   padding: 0.1rem 0.4rem;
   letter-spacing: 0.04em;
+}
+
+.searchbar-spinner {
+  color: var(--accent);
+  flex-shrink: 0;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
