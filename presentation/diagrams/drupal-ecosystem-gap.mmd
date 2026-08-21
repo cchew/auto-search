@@ -1,0 +1,12 @@
+%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 60, 'rankSpacing': 50}}}%%
+graph BT
+    A["<div style='min-width:380px;padding:4px 8px'>AI Search + Ollama<br/>Runs: a sidecar service alongside Drupal<br/>Costs: RAM, a process to supervise</div>"] --> B["<div style='min-width:380px;padding:4px 8px'>AI Search / Semantic Search + OpenAI<br/>Runs: an external API call per query<br/>Costs: latency, a key to manage, per-query fees</div>"]
+    B --> C["<div style='min-width:380px;padding:4px 8px'>Search API Embeddings (Word2Vec)<br/>Runs: in-process, but a 2013-era model<br/>Costs: far weaker than transformer embeddings</div>"]
+    C --> D["<div style='min-width:380px;padding:4px 8px'>Scolta (client-side lexical + LLM rewrite)<br/>Runs: a static index in the browser<br/>Costs: no real semantic similarity, just query rewriting</div>"]
+    D --> E["<div style='min-width:380px;padding:4px 8px'>Auto Search: model runs inside the PHP process<br/>Runs: nothing extra, no sidecar, no external call<br/>Costs: ~22MB model, one FFI extension</div>"]
+
+    style A fill:#f4f4f4,stroke:#888
+    style B fill:#f4f4f4,stroke:#888
+    style C fill:#f4f4f4,stroke:#888
+    style D fill:#f4f4f4,stroke:#888
+    style E fill:#e8f1ff,stroke:#0066cc,stroke-width:2px

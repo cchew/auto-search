@@ -1,0 +1,32 @@
+%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 50, 'rankSpacing': 90, 'curve': 'basis'}}}%%
+flowchart LR
+    user(["<b>Drupal visitor</b><br/><i>Searches by intent,<br/>not exact name</i>"])
+
+    subgraph spa["Vue 3 SPA (Drupal library)"]
+        direction TB
+        searchbar["<b>SearchBar</b><br/><i>Vue 3</i><br/>Unchanged from<br/>standalone build"]
+        highlight["<b>DataItemHighlight</b><br/><i>Vue 3</i><br/>Scrolls and fades<br/>the matched item"]
+    end
+
+    subgraph php["Drupal 10 module (single PHP process)"]
+        direction TB
+        api["<b>SearchController</b><br/><i>Drupal route</i><br/>POST /api/v1/search"]
+        tok["<b>BertTokenizer</b><br/><i>PHP, hand-ported</i><br/>WordPiece, mirrors<br/>Java/Python exactly"]
+        embed["<b>EmbeddingService</b><br/><i>PHP FFI</i><br/>ONNX Runtime via<br/>libonnxruntime.so"]
+        sim["<b>SimilarityService</b><br/><i>PHP</i><br/>In-memory cosine<br/>over 350 vectors"]
+    end
+
+    user -->|"Types query"| searchbar
+    searchbar -->|"JSON over HTTP"| api
+    api -->|"encode(query)"| tok
+    tok -->|"input_ids, attention_mask"| embed
+    embed -->|"embed(query)"| sim
+    api -.->|"Top-K results"| searchbar
+    searchbar -->|"Navigate ?highlight=itemId"| highlight
+
+    classDef person fill:#08427b,stroke:#073b6f,color:#fff
+    classDef component fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef boundary fill:none,stroke:#666,stroke-dasharray:5 5,color:#333
+    class user person
+    class searchbar,highlight,api,tok,embed,sim component
+    class spa,php boundary
