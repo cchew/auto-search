@@ -222,7 +222,7 @@ section.appendix h2 {
 # A Model With No Business Running Here
 
 <br/>
-Semantic search inside a Drupal module. No sidecar.
+Semantic search inside a Drupal module. No sidecar, APIs or new software.
 
 Ching Chew · September 2026
 
@@ -231,9 +231,9 @@ Ching Chew · September 2026
 ![w:200](screenshots/qr-drupal.png)
 
 <!-- note:
-Pre-show: Docker demo running locally, http://localhost:8080/autosearch open in one tab, keyword mode ready via ?mode=keyword. Second tab on the GitHub repo (drupal branch) for the QR code.
+Pre-show: Docker demo running locally, http://localhost:8080/autosearch open in 2 tabs (keyword mode ready via ?mode=keyword with second regular one). Third tab on the GitHub repo (drupal branch) for the QR code.
 
-Opening line, said out loud, not read off the slide: "There's a place a machine learning model has no business running: inside a Drupal module's PHP process. That's exactly where this one runs."
+"Cloud hosting and APIs make semantic search and machine learning models easy to run and consume. What if you don't want to introduce another dependency and want to run this inside Drupal? This is where this presentation comes in."
 
 Audience framing: assume zero prior exposure. This room may include people who know Drupal deeply but have never seen a semantic search demo, and some non-technical attendees. Don't assume anyone read an earlier blog post or saw a prior talk — the next several slides rebuild the concept from scratch before anything Drupal-specific shows up.
 
@@ -245,11 +245,9 @@ Platform adaptation: if presenting over Teams/Zoom instead of in-room, paste the
 ![bg contain](screenshots/not-found.jpg)
 
 <!-- note:
-Kick-off talking point, spoken not read off the slide.
+"Hands up if anyone here experienced frustration with search: especially trying to find something you are sure exists in the system?"
 
-"This is a note-taking app. The headings are right there on screen: heading 1 through heading 6. Search for 'heading' — no result. Frustrating, isn't it? You know it's there. You can see it. And the search still says no."
-
-"Now imagine that's not a text editor. It's a data catalogue at work, a knowledge base, a Drupal site with a few hundred pages, and you know the thing you want exists, you just can't remember the exact word someone used for it three years ago."
+"No imagine this frustration in your user base, using your website or application."
 
 Non-technical framing: this slide is a feeling, not an explanation. Do not explain tokens, indexing or search internals yet. The explanation builds over the next few slides.
 -->
@@ -266,7 +264,7 @@ A user wants to find "how many GPs we have."
 
 <br/>
 
-**Search matches names. Users remember concepts.**
+**Search matches names. Users might know it as something else.**
 
 <!-- note:
 Universal in any content-heavy site with specialist vocabulary: a Drupal knowledge base, an intranet, a product catalogue, a policy library.
@@ -301,9 +299,52 @@ Walk the ladder briefly. Most Drupal sites sit at rung 2 or 3 (core search, or S
 
 Rung 3 (Solr/OpenSearch + synonyms): the synonym list is a bag of intent someone has to maintain forever. Every new acronym is a config change.
 
-Rung 4 is what we're about to demo.
+Rung 4 is OOTB embeddings (machine representation of meaning, series of numbers), we will demo fine-tuned (improved) version of Rung 4. I will explain how fine-tuning works later.
 
 Definition callout if the room needs it: "Solr" / "OpenSearch" — a dedicated search engine service some Drupal sites index content into, separate from the database.
+-->
+
+---
+
+## The Drupal Ecosystem's Answer Today
+
+That's the general shape of the problem and the fix. Here's where Drupal sits today:
+
+- **AI Search + Ollama** — a sidecar service, 5 to 15 GB RAM
+- **AI Search / Semantic Search + OpenAI** — external API call per query, a key to manage, per-query cost
+- **Search API Embeddings** — in-process, but Word2Vec, 2013-era tech
+- **Scolta** (new, Aug 2026) — client-side lexical index + LLM query rewriting, not embeddings
+
+<br/>
+
+**Every path is a sidecar, a call, or not actually semantic.**
+
+<!-- note:
+Scan slide, list not deep technical content. Move at pace.
+
+Scolta needs one sentence of respect, not dismissal: same instinct (no search server), different mechanism (lexical index in the browser, not vector embeddings). If someone in the room has tried Scolta, this is the moment they'll raise a hand, welcome it, it's a genuine adjacent tool.
+
+Exec framing: this is the "why doesn't this already exist" slide. Point at RAM cost and per-query billing as the two numbers that matter for a budget conversation.
+-->
+
+---
+
+## The Actual Gap
+
+Nobody in the Drupal ecosystem runs the embedding model inside the PHP process itself.
+
+- An INT8-quantised, fine-tuned `all-MiniLM-L6-v2` is ~22 MB
+- That is small enough to load once, in-process, on first request
+- No Ollama. No external call. No vector database.
+
+<br/>
+
+**This is what that looks like.**
+
+<!-- note:
+This is the "so what" slide, land it clearly, then go straight into the demo. Exec audience: this is the moment to say "no new service to procure, no new SLA to negotiate."
+
+Peer audience: the size number (22 MB) is doing the work here, it's smaller than most people's mental model of "a machine learning model."
 -->
 
 ---
@@ -375,51 +416,6 @@ Non-technical framing: don't dwell on the loss function name. The point that lan
 
 ---
 
-## The Drupal Ecosystem's Answer Today
-
-That's the general shape of the problem and the fix. Here's where Drupal sits today:
-
-- **AI Search + Ollama** — a sidecar service, 5 to 15 GB RAM, a network hop even on localhost
-- **AI Search / Semantic Search + OpenAI** — external API call per query, a key to manage, per-query cost
-- **Search API Embeddings** — in-process, but Word2Vec, 2013-era tech
-- **Scolta** (new, Aug 2026) — client-side lexical index + LLM query rewriting, not embeddings
-
-<br/>
-
-**Every path is a sidecar, a call, or not actually semantic.**
-
-<div class="def"><strong>FFI</strong> — Foreign Function Interface. Lets PHP call native C++ code directly, no network involved.</div>
-
-<!-- note:
-Scan slide, list not deep technical content. Move at pace.
-
-Scolta needs one sentence of respect, not dismissal: same instinct (no search server), different mechanism (lexical index in the browser, not vector embeddings). If someone in the room has tried Scolta, this is the moment they'll raise a hand, welcome it, it's a genuine adjacent tool.
-
-Exec framing: this is the "why doesn't this already exist" slide. Point at RAM cost and per-query billing as the two numbers that matter for a budget conversation.
--->
-
----
-
-## The Actual Gap
-
-Nobody in the Drupal ecosystem runs the embedding model inside the PHP process itself.
-
-- An INT8-quantised, fine-tuned `all-MiniLM-L6-v2` is ~22 MB
-- That is small enough to load once, in-process, on first request
-- No Ollama. No external call. No vector database.
-
-<br/>
-
-**This is what that looks like.**
-
-<!-- note:
-This is the "so what" slide, land it clearly before moving into architecture. Exec audience: this is the moment to say "no new service to procure, no new SLA to negotiate."
-
-Peer audience: the size number (22 MB) is doing the work here, it's smaller than most people's mental model of "a machine learning model."
--->
-
----
-
 ## Architecture
 
 ![w:1200](diagrams/drupal-runtime-flow.svg)
@@ -427,6 +423,7 @@ Peer audience: the size number (22 MB) is doing the work here, it's smaller than
 The Vue frontend is unchanged. Everything new is in the PHP module.
 
 <div class="def"><strong>ONNX</strong> — Open Neural Network Exchange. A portable model format; the same file runs in Java, Python or PHP.</div>
+<div class="def"><strong>FFI</strong> — Foreign Function Interface. Lets PHP call native C++ code directly, no network involved. That's how the box labelled "PHP FFI" in the diagram talks to the ONNX model.</div>
 
 <!-- note:
 [deep] slide, signpost verbally: "this one's for the people who want the mechanism, feel free to zone out for 90 seconds if you just want the shape of it."
@@ -472,35 +469,22 @@ Second code block available if there's time/interest: EmbeddingService::embed() 
 
 ## Two Deployment Modes
 
-| | Self-hosted Drupal | GovCMS SaaS |
+GovCMS has two offerings, and only one of them is an ONNX question.
+
+| | Self-hosted / GovCMS PaaS | GovCMS SaaS |
 |---|---|---|
-| `libonnxruntime.so` | Install in one line | Not available |
-| Embedding at query time | In the PHP process | Thin sidecar required |
-| Model size | 22 MB | 22 MB |
-| Ollama? | No | No |
+| Custom modules at all | Yes, agency controls the container | Not permitted — approved module set only |
+| `libonnxruntime.so` | Install it, same as self-hosted | Moot — custom code isn't an option here |
+| Ollama? | No | N/A |
 
-**Even the sidecar path stays small: 22 MB and one HTTP call. No GPU. No Ollama.**
-
-<!-- note:
-This is the honest-caveat slide, do not skip or soften it. Strong GovCMS contingent in this room; they will ask about this unprompted if it isn't addressed first.
-
-Exec framing: this is the slide that answers "can my team actually run this" for anyone on managed hosting. The answer is "not identically, but the fallback is still small."
-
-Don't let this slide read as a retreat, the honest framing is what builds trust with a peer audience that's allergic to hand-waving.
--->
-
----
-
-## Lessons Learnt
-
-- **FFI and `intl` extensions aren't compiled in by default** — bites on managed PHP images without root access to the build
-- **Lazy service proxies break constructor type hints** — Drupal's generated proxies don't extend the concrete class; type the constructor as `object`
-- **MariaDB 10.11 requires SSL by default** — `mysqladmin` and `pdo_mysql` both fail until `--skip-ssl` is set explicitly
+**This isn't an ONNX-specific limit. GovCMS SaaS doesn't allow custom modules at all, independent of what they do. Auto Search needs PaaS or self-hosted.**
 
 <!-- note:
-[scan] slide but each bullet needs its one-line so-what said out loud, not just read, these are the three that would waste someone a full afternoon if they hit them cold.
+Correction worth knowing before this slide is delivered: SaaS and PaaS are genuinely different services, not two flavours of the same constraint. SaaS is fully managed with a fixed approved module and theme set, no custom code, full stop, regardless of what that code does. PaaS runs on Lagoon/Kubernetes and the agency owns its own Docker image, exactly the same model as tonight's local demo, so libonnxruntime.so is exactly as available there as it is self-hosted.
 
-Peer audience: this is the "here's what I tried first and didn't work" content the profile calls for. Don't rush past it for time; it's more valuable than the architecture slide to someone about to attempt this themselves.
+This is the honest-caveat slide, do not skip or soften it. Strong GovCMS contingent in this room; naming SaaS's real constraint (no custom code at all) lands better than an ONNX-specific workaround that doesn't reflect how SaaS actually works.
+
+Exec framing: the answer to "can my team actually run this" is "yes, if you're on PaaS or self-hosted; no, if you're on SaaS, and that's true of any custom module, not just this one."
 -->
 
 ---
@@ -526,27 +510,31 @@ If asked about swapping in a different corpus: corpus.json and the model artefac
 
 ## Conclusion
 
-"The Drupal ecosystem doesn't need a sidecar to run a real ML model. It needs someone willing to hand-port a tokenizer."
+"The user does not care which rung of the ladder you used. They care that the search worked."
 
 <br/>
 
-- The in-process pattern isn't JVM-specific, it travels to any runtime with an FFI story
-- Naming the honest limits (GovCMS) built more trust than hiding them would have
-- Clone it, break it, tell me what you find
+- Most search problems are vocabulary problems
+- Fine-tuned small models beat off-the-shelf large models on domain tasks
+- The infrastructure can stay boring, even inside Drupal
 
 <br/>
 
-**github.com/cchew/auto-search (drupal branch)**
+- Thank you
+- Feedback and questions: DM via LinkedIn
+- Code: github.com/cchew/auto-search (drupal branch)
 
 <!-- note:
-Land the takeaway: the pattern generalises past both Java and PHP. Anywhere with an FFI story and a small enough model, sidecars are a choice, not a requirement.
+Land the takeaway: search is a UX problem dressed up as an ML problem. Solve the vocabulary mismatch and the rest is a for-loop, in PHP just as much as in Java.
 
 Open Q&A. Likely questions:
 - "Does this work on Drupal 11?" — yes, info.yml declares ^10 || ^11
 - "What about content types beyond a flat corpus?" — corpus.json is the interface; anything that flattens to items with a name/description works today, entity-aware indexing is future work
 - "Why not just use Scolta?" — different problem: Scolta rewrites queries against a lexical index; this does real semantic similarity. Use Scolta if you want zero infra and can live with lexical search; use this if you need the model to actually understand domain vocabulary.
+- "Why not RAG?" — different problem, retrieval is one part of RAG, this is just retrieval.
+- Cost? ~30c training on Haiku, $0 per query.
 
-Platform adaptation: if this is presented again internally (Teams), swap the GitHub CTA for an ADO Wiki link to the internal build notes.
+Platform adaptation: if this is presented again internally (Teams), swap "DM via LinkedIn" for a Teams handle and swap the GitHub CTA for an ADO Wiki link to the internal build notes.
 -->
 
 ---
@@ -594,4 +582,47 @@ Cover only if asked. This is the "what would you still need to do before product
 
 <!-- note:
 Tech stack on request. The point to land if asked: nothing about the model or training pipeline changed for this port, only the runtime host.
+-->
+
+---
+
+<!-- _class: appendix -->
+<!-- _paginate: false -->
+
+## Appendix C — Lessons Learnt
+
+- **FFI and `intl` extensions aren't compiled in by default** — bites on managed PHP images without root access to the build
+- **Lazy service proxies break constructor type hints** — Drupal's generated proxies don't extend the concrete class; type the constructor as `object`
+- **MariaDB 10.11 requires SSL by default** — `mysqladmin` and `pdo_mysql` both fail until `--skip-ssl` is set explicitly
+
+<!-- note:
+Cover only if asked, or if there's time to spare, these are the three that would waste someone a full afternoon if they hit them cold.
+
+Peer audience: this is the "here's what I tried first and didn't work" content this profile responds to. Worth surfacing proactively for a technical Q&A even if not asked directly.
+-->
+
+---
+
+<!-- _class: appendix -->
+<!-- _paginate: false -->
+
+## Appendix D — Eval Results
+
+| Model | Recall@1 | MRR@5 |
+|---|---|---|
+| all-MiniLM-L6-v2 (OOTB) | 0.750 | 0.808 |
+| bge-small-en-v1.5 (OOTB, larger) | 0.800 | 0.850 |
+| **all-MiniLM-L6-v2 fine-tuned (INT8 ONNX)** | **0.850** | **0.908** |
+
+Roughly +5pp Recall@1 over the best OOTB baseline (+10pp over the same MiniLM base).
+Smaller, faster, more accurate, directional only, n=20.
+
+<!-- note:
+Same model, same numbers as the JVM version, nothing about the Drupal port changes accuracy, only where it runs.
+
+Two test sets, both synthetic. LLM holdout (0.93) vs a smaller secondary set (0.85) with shorter, keyword-style queries. The gap is what the model learned about Claude's verbose phrasing vs terser phrasings. Logged queries from a live deployment would be the strongest signal but don't exist yet.
+
+Fine-tuned beats the larger OOTB baseline. Domain knowledge beats model size at this scale.
+
+Recall@1 = 0.85 means 1 in 7 queries miss the top hit. Cover this only if asked, it's precedent from the JVM talk, not new Drupal-specific work.
 -->
