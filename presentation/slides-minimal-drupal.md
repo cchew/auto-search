@@ -416,6 +416,31 @@ Non-technical framing: don't dwell on the loss function name. The point that lan
 
 ---
 
+## Eval Results
+
+| Model | Size | Recall@1 | MRR@5 |
+|---|---|---|---|
+| all-MiniLM-L6-v2 (OOTB) | 91 MB | 0.750 | 0.808 |
+| bge-small-en-v1.5 (OOTB, larger) | 133 MB | 0.800 | 0.850 |
+| **all-MiniLM-L6-v2 fine-tuned (INT8 ONNX)** | **22 MB** | **0.850** | **0.908** |
+
+**Roughly 1/6th the size of bge-small, and still more accurate.**
+
+<div class="def"><strong>Recall@1</strong> — how often the correct item is the very top result. 0.85 means 85 times out of 100.</div>
+<div class="def"><strong>MRR@5</strong> — Mean Reciprocal Rank across the top 5 results. Rewards a correct answer even if it isn't first: rank 2 scores 0.5, rank 3 scores 0.33.</div>
+
+<!-- note:
+Same model, same numbers as the JVM version, nothing about the Drupal port changes accuracy, only where it runs.
+
+Two test sets, both synthetic. LLM holdout (0.93) vs a smaller secondary set (0.85) with shorter, keyword-style queries. The gap is what the model learned about Claude's verbose phrasing vs terser phrasings. Logged queries from a live deployment would be the strongest signal but don't exist yet.
+
+Size numbers: OOTB fp32 checkpoints as downloaded from Hugging Face (91 MB, 133 MB). The 22 MB figure is the fine-tuned model after INT8 quantisation, the actual file running in the demo. Not a like-for-like quantisation comparison, but an honest one: this is what ships vs what you'd get OOTB.
+
+n=20 on the secondary set, directional only, not statistically significant on its own. The larger LLM holdout (n=1182) shows the same ranking.
+-->
+
+---
+
 ## Architecture
 
 ![w:1200](diagrams/drupal-runtime-flow.svg)
@@ -469,15 +494,12 @@ Second code block available if there's time/interest: EmbeddingService::embed() 
 
 ## Two Deployment Modes
 
-GovCMS has two offerings, and only one of them is an ONNX question.
+If you are deploying this to Production:
 
 | | Self-hosted / GovCMS PaaS | GovCMS SaaS |
 |---|---|---|
 | Custom modules at all | Yes, agency controls the container | Not permitted — approved module set only |
 | `libonnxruntime.so` | Install it, same as self-hosted | Moot — custom code isn't an option here |
-| Ollama? | No | N/A |
-
-**This isn't an ONNX-specific limit. GovCMS SaaS doesn't allow custom modules at all, independent of what they do. Auto Search needs PaaS or self-hosted.**
 
 <!-- note:
 Correction worth knowing before this slide is delivered: SaaS and PaaS are genuinely different services, not two flavours of the same constraint. SaaS is fully managed with a fixed approved module and theme set, no custom code, full stop, regardless of what that code does. PaaS runs on Lagoon/Kubernetes and the agency owns its own Docker image, exactly the same model as tonight's local demo, so libonnxruntime.so is exactly as available there as it is self-hosted.
@@ -516,13 +538,13 @@ If asked about swapping in a different corpus: corpus.json and the model artefac
 
 - Most search problems are vocabulary problems
 - Fine-tuned small models beat off-the-shelf large models on domain tasks
-- The infrastructure can stay boring, even inside Drupal
+- The infrastructure can stay boring
 
 <br/>
 
-- Thank you
-- Feedback and questions: DM via LinkedIn
-- Code: github.com/cchew/auto-search (drupal branch)
+Thank you
+Feedback and questions: DM via LinkedIn
+Code: github.com/cchew/auto-search (drupal branch)
 
 <!-- note:
 Land the takeaway: search is a UX problem dressed up as an ML problem. Solve the vocabulary mismatch and the rest is a for-loop, in PHP just as much as in Java.
@@ -599,30 +621,4 @@ Tech stack on request. The point to land if asked: nothing about the model or tr
 Cover only if asked, or if there's time to spare, these are the three that would waste someone a full afternoon if they hit them cold.
 
 Peer audience: this is the "here's what I tried first and didn't work" content this profile responds to. Worth surfacing proactively for a technical Q&A even if not asked directly.
--->
-
----
-
-<!-- _class: appendix -->
-<!-- _paginate: false -->
-
-## Appendix D — Eval Results
-
-| Model | Recall@1 | MRR@5 |
-|---|---|---|
-| all-MiniLM-L6-v2 (OOTB) | 0.750 | 0.808 |
-| bge-small-en-v1.5 (OOTB, larger) | 0.800 | 0.850 |
-| **all-MiniLM-L6-v2 fine-tuned (INT8 ONNX)** | **0.850** | **0.908** |
-
-Roughly +5pp Recall@1 over the best OOTB baseline (+10pp over the same MiniLM base).
-Smaller, faster, more accurate, directional only, n=20.
-
-<!-- note:
-Same model, same numbers as the JVM version, nothing about the Drupal port changes accuracy, only where it runs.
-
-Two test sets, both synthetic. LLM holdout (0.93) vs a smaller secondary set (0.85) with shorter, keyword-style queries. The gap is what the model learned about Claude's verbose phrasing vs terser phrasings. Logged queries from a live deployment would be the strongest signal but don't exist yet.
-
-Fine-tuned beats the larger OOTB baseline. Domain knowledge beats model size at this scale.
-
-Recall@1 = 0.85 means 1 in 7 queries miss the top hit. Cover this only if asked, it's precedent from the JVM talk, not new Drupal-specific work.
 -->
