@@ -235,54 +235,45 @@ Pre-show: Docker demo running locally, http://localhost:8080/autosearch open in 
 
 Opening line, said out loud, not read off the slide: "There's a place a machine learning model has no business running: inside a Drupal module's PHP process. That's exactly where this one runs."
 
-Audience framing: this room saw the July 2025 Vue.js-in-Drupal talk. Some were also at (or read) the JVM Auto Search talk in May. Both are fine — the recap on slide 2 covers newcomers in under a minute.
+Audience framing: assume zero prior exposure. This room may include people who know Drupal deeply but have never seen a semantic search demo, and some non-technical attendees. Don't assume anyone read an earlier blog post or saw a prior talk — the next several slides rebuild the concept from scratch before anything Drupal-specific shows up.
 
 Platform adaptation: if presenting over Teams/Zoom instead of in-room, paste the repo link in chat at this point rather than relying on the QR code.
 -->
 
 ---
 
-## If You Saw the JVM Version
-
-Same model. Same fine-tuned weights. A new place to run it.
-
-- Users search a reports catalogue by concept, not by the name an analyst gave it
-- "GP FTE" and "how many GPs do we have" share zero tokens
-- A sentence embedding model, fine-tuned on the domain, closes that gap
-
-<br/>
-
-**This talk is about porting that model into PHP. Not re-deriving why semantic search works.**
+![bg contain](screenshots/not-found.jpg)
 
 <!-- note:
-For anyone who wasn't in the room in May: full write-up and eval numbers at herdmentality.xyz/blog/auto-search. Don't re-derive the eval table here — it hasn't changed, same weights.
+Kick-off talking point, spoken not read off the slide.
 
-Exec framing: if asked "is this the same accuracy as the Java version" — yes, identical model, identical Recall@1. Nothing about porting to PHP changes the model's quality, only where it runs.
+"This is a note-taking app. The headings are right there on screen: heading 1 through heading 6. Search for 'heading' — no result. Frustrating, isn't it? You know it's there. You can see it. And the search still says no."
 
-Keep this slide under 2 minutes. It's a bridge, not new content.
+"Now imagine that's not a text editor. It's a data catalogue at work, a knowledge base, a Drupal site with a few hundred pages, and you know the thing you want exists, you just can't remember the exact word someone used for it three years ago."
+
+Non-technical framing: this slide is a feeling, not an explanation. Do not explain tokens, indexing or search internals yet. The explanation builds over the next few slides.
 -->
 
 ---
 
-## The Drupal Ecosystem's Answer Today
+## The Naming Problem
 
-- **AI Search + Ollama** — a sidecar service, 5 to 15 GB RAM, a network hop even on localhost
-- **AI Search / Semantic Search + OpenAI** — external API call per query, a key to manage, per-query cost
-- **Search API Embeddings** — in-process, but Word2Vec, 2013-era tech
-- **Scolta** (new, Aug 2026) — client-side lexical index + LLM query rewriting, not embeddings
+A user wants to find "how many GPs we have."
+
+- The data item is called "GP FTE"
+- Or "Total practitioner FTE"
+- Or something else again, depends who wrote it
 
 <br/>
 
-**Every path is a sidecar, a call, or not actually semantic.**
-
-<div class="def"><strong>FFI</strong> — Foreign Function Interface. Lets PHP call native C++ code directly, no network involved.</div>
+**Search matches names. Users remember concepts.**
 
 <!-- note:
-Scan slide — list, not deep technical content. Move at pace.
+Universal in any content-heavy site with specialist vocabulary: a Drupal knowledge base, an intranet, a product catalogue, a policy library.
 
-Scolta needs one sentence of respect, not dismissal: same instinct (no search server), different mechanism (lexical index in the browser, not vector embeddings). If someone in the room has tried Scolta, this is the moment they'll raise a hand — welcome it, it's a genuine adjacent tool.
+Don't answer the rhetorical. Let the room think of their own version — a wiki page, a form name, a policy document they've hunted for themselves.
 
-Exec framing: this is the "why doesn't this already exist" slide. Point at RAM cost and per-query billing as the two numbers that matter for a budget conversation.
+Non-technical framing: no jargon yet. This is a problem everyone in the room has lived, technical or not.
 -->
 
 ---
@@ -291,10 +282,28 @@ Exec framing: this is the "why doesn't this already exist" slide. Point at RAM c
 ![bg contain](screenshots/drupal-semantic-hit.png)
 
 <!-- note:
-Full-bleed split. No narration needed — let the room read it.
+Full-bleed split. No narration needed, let the room read it.
 "Same query. Same Drupal module. Different search."
 
-This is the gap named on the previous slide, made concrete before the live demo.
+This is the destination. Everything between here and the live demo explains how we got there.
+-->
+
+---
+
+## The Search Ladder
+
+![w:300](diagrams/search-ladder.svg)
+
+Each rung buys recall. None solve vocabulary mismatch.
+
+<!-- note:
+Walk the ladder briefly. Most Drupal sites sit at rung 2 or 3 (core search, or Search API with an index).
+
+Rung 3 (Solr/OpenSearch + synonyms): the synonym list is a bag of intent someone has to maintain forever. Every new acronym is a config change.
+
+Rung 4 is what we're about to demo.
+
+Definition callout if the room needs it: "Solr" / "OpenSearch" — a dedicated search engine service some Drupal sites index content into, separate from the database.
 -->
 
 ---
@@ -313,9 +322,80 @@ Keyword vs Semantic, Running Inside Drupal
 4. Click through => navigates to the report, scrolls, fades highlight
 5. Optional: show /admin/modules with Auto Search enabled — "this is a real module, not a bolt-on"
 
-Platform adaptation: if the venue wifi is unreliable, this entire demo is local Docker — no internet dependency. Say so up front; it's a feature of the architecture, not a caveat.
+Platform adaptation: if the venue wifi is unreliable, this entire demo is local Docker, no internet dependency. Say so up front; it's a feature of the architecture, not a caveat.
 
-Backup: if Docker fails to start, screenshots from this exact sequence are on the next few slides regardless — narrate from them if needed.
+Backup: if Docker fails to start, the before/after screenshots already shown cover this exact sequence, narrate from memory if needed.
+-->
+
+---
+
+## The Vocabulary Problem
+
+![w:550](diagrams/vocabulary-problem.svg)
+
+Off-the-shelf embeddings know "doctor" is close to "physician".
+
+They do not know "GP FTE" means "general practitioner full-time equivalent" in an Australian primary care context.
+
+**That is what fine-tuning fixes.**
+
+<!-- note:
+Domain vocabulary is the reason for everything that follows in this talk: the tokenizer port, the FFI wiring, all of it exists to run a fine-tuned model, not a generic one.
+
+OOTB MiniLM: Recall@1 = 0.75. OOTB bge-small (larger model): Recall@1 = 0.80. Both miss one query in five, and the misses cluster on exactly the domain-specific phrasings that matter most.
+
+Fine-tuning teaches the model the vocabulary. Full eval numbers are in the JVM write-up for anyone who wants to go deeper afterwards: herdmentality.xyz/blog/auto-search.
+-->
+
+---
+
+## Synthetic Pairs from Claude
+
+No human labelled "golden dataset" exists, so we generate one from an LLM.
+
+```python
+prompt = (
+  f"Data item:\nName: {item['name']}\n"
+  f"Description: {item.get('description', '')}\n\n"
+  f"Generate 10 diverse natural-language queries a health "
+  f"workforce planner might type to find this item. Include "
+  f"acronym expansions, synonyms, colloquial phrasings."
+)
+```
+
+~5,900 pairs across 350 items (re-runs accumulate). ~30c on Haiku.
+
+<!-- note:
+The unglamorous bit that made it work, and the same pipeline as the JVM version. Worth saying out loud: "the training side didn't change at all when this got ported to PHP, only the runtime did."
+
+Loss function for anyone technical: MultipleNegativesRankingLoss, every other item in the batch acts as an implicit negative. Batch size 32, three epochs.
+
+Non-technical framing: don't dwell on the loss function name. The point that lands is "we used one AI model to generate the training examples for a different, much smaller AI model."
+-->
+
+---
+
+## The Drupal Ecosystem's Answer Today
+
+That's the general shape of the problem and the fix. Here's where Drupal sits today:
+
+- **AI Search + Ollama** — a sidecar service, 5 to 15 GB RAM, a network hop even on localhost
+- **AI Search / Semantic Search + OpenAI** — external API call per query, a key to manage, per-query cost
+- **Search API Embeddings** — in-process, but Word2Vec, 2013-era tech
+- **Scolta** (new, Aug 2026) — client-side lexical index + LLM query rewriting, not embeddings
+
+<br/>
+
+**Every path is a sidecar, a call, or not actually semantic.**
+
+<div class="def"><strong>FFI</strong> — Foreign Function Interface. Lets PHP call native C++ code directly, no network involved.</div>
+
+<!-- note:
+Scan slide, list not deep technical content. Move at pace.
+
+Scolta needs one sentence of respect, not dismissal: same instinct (no search server), different mechanism (lexical index in the browser, not vector embeddings). If someone in the room has tried Scolta, this is the moment they'll raise a hand, welcome it, it's a genuine adjacent tool.
+
+Exec framing: this is the "why doesn't this already exist" slide. Point at RAM cost and per-query billing as the two numbers that matter for a budget conversation.
 -->
 
 ---
@@ -333,9 +413,9 @@ Nobody in the Drupal ecosystem runs the embedding model inside the PHP process i
 **This is what that looks like.**
 
 <!-- note:
-This is the "so what" slide — land it clearly before moving into architecture. Exec audience: this is the moment to say "no new service to procure, no new SLA to negotiate."
+This is the "so what" slide, land it clearly before moving into architecture. Exec audience: this is the moment to say "no new service to procure, no new SLA to negotiate."
 
-Peer audience: the size number (22 MB) is doing the work here — it's smaller than most people's mental model of "a machine learning model."
+Peer audience: the size number (22 MB) is doing the work here, it's smaller than most people's mental model of "a machine learning model."
 -->
 
 ---
@@ -349,11 +429,11 @@ The Vue frontend is unchanged. Everything new is in the PHP module.
 <div class="def"><strong>ONNX</strong> — Open Neural Network Exchange. A portable model format; the same file runs in Java, Python or PHP.</div>
 
 <!-- note:
-[deep] slide — signpost verbally: "this one's for the people who want the mechanism, feel free to zone out for 90 seconds if you just want the shape of it."
+[deep] slide, signpost verbally: "this one's for the people who want the mechanism, feel free to zone out for 90 seconds if you just want the shape of it."
 
-The Vue SPA is served as a Drupal library, same pattern as the July 2025 Vue.js-in-Drupal talk. Nothing changed there.
+The Vue SPA is served as a Drupal library, the same pattern as an earlier Vue.js-in-Drupal talk to this group. Nothing changed there. If nobody in the room saw that talk, this is just "the frontend is a normal Drupal library, nothing special."
 
-Exec framing: point at the box labelled "Drupal 10 module (single PHP process)" — this is the entire new deployment surface. One module, no new infrastructure.
+Exec framing: point at the box labelled "Drupal 10 module (single PHP process)", this is the entire new deployment surface. One module, no new infrastructure.
 -->
 
 ---
@@ -381,7 +461,7 @@ Hand-ported WordPiece tokenizer. PHP has no HuggingFace Tokenizers equivalent.
 <!-- note:
 [deep] slide, pairs with the previous one.
 
-This is the highest-risk piece of the whole port — validated token-for-token against the Java and Python implementations before trusting it near the model.
+This is the highest-risk piece of the whole port, validated token-for-token against the Java and Python implementations before trusting it near the model.
 
 Peer question likely to come up: "why not just call out to a Python sidecar for tokenization?" Answer: that reintroduces exactly the sidecar dependency the whole talk argues against. If you're going to run the model in-process, the tokenizer has to be in-process too.
 
@@ -402,11 +482,11 @@ Second code block available if there's time/interest: EmbeddingService::embed() 
 **Even the sidecar path stays small: 22 MB and one HTTP call. No GPU. No Ollama.**
 
 <!-- note:
-This is the honest-caveat slide — do not skip or soften it. Strong GovCMS contingent in this room; they will ask about this unprompted if it isn't addressed first.
+This is the honest-caveat slide, do not skip or soften it. Strong GovCMS contingent in this room; they will ask about this unprompted if it isn't addressed first.
 
 Exec framing: this is the slide that answers "can my team actually run this" for anyone on managed hosting. The answer is "not identically, but the fallback is still small."
 
-Don't let this slide read as a retreat — the honest framing is what builds trust with a peer audience that's allergic to hand-waving.
+Don't let this slide read as a retreat, the honest framing is what builds trust with a peer audience that's allergic to hand-waving.
 -->
 
 ---
@@ -418,7 +498,7 @@ Don't let this slide read as a retreat — the honest framing is what builds tru
 - **MariaDB 10.11 requires SSL by default** — `mysqladmin` and `pdo_mysql` both fail until `--skip-ssl` is set explicitly
 
 <!-- note:
-[scan] slide but each bullet needs its one-line so-what said out loud, not just read — these are the three that would waste someone a full afternoon if they hit them cold.
+[scan] slide but each bullet needs its one-line so-what said out loud, not just read, these are the three that would waste someone a full afternoon if they hit them cold.
 
 Peer audience: this is the "here's what I tried first and didn't work" content the profile calls for. Don't rush past it for time; it's more valuable than the architecture slide to someone about to attempt this themselves.
 -->
@@ -437,7 +517,7 @@ docker compose up --build
 Then open `localhost:8080/autosearch`.
 
 <!-- note:
-Most student-friendly and recruiter-friendly slide in the deck — say the URL out loud, don't just show it.
+Most student-friendly and recruiter-friendly slide in the deck, say the URL out loud, don't just show it.
 
 If asked about swapping in a different corpus: corpus.json and the model artefacts are the only things that change; setup-model.sh takes any corpus name matching a folder under examples/.
 -->
@@ -450,7 +530,7 @@ If asked about swapping in a different corpus: corpus.json and the model artefac
 
 <br/>
 
-- The in-process pattern isn't JVM-specific — it travels to any runtime with an FFI story
+- The in-process pattern isn't JVM-specific, it travels to any runtime with an FFI story
 - Naming the honest limits (GovCMS) built more trust than hiding them would have
 - Clone it, break it, tell me what you find
 
@@ -488,7 +568,7 @@ Platform adaptation: if this is presented again internally (Teams), swap the Git
 - Memory: ~22 MB model + (N items × 384 × 4 bytes) vectors, same envelope as the JVM version
 
 <!-- note:
-Cover only if asked. This is the "what would you still need to do before production" list — a peer audience will ask, an exec audience usually won't.
+Cover only if asked. This is the "what would you still need to do before production" list, a peer audience will ask, an exec audience usually won't.
 -->
 
 ---
@@ -513,5 +593,5 @@ Cover only if asked. This is the "what would you still need to do before product
 - Olivero (front theme) + Claro (admin theme)
 
 <!-- note:
-Tech stack on request. The point to land if asked: nothing about the model or training pipeline changed for this port — only the runtime host.
+Tech stack on request. The point to land if asked: nothing about the model or training pipeline changed for this port, only the runtime host.
 -->
