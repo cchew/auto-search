@@ -235,7 +235,7 @@ Pre-show: Docker demo running locally, http://localhost:8080/autosearch open in 
 
 "Cloud hosting and APIs make semantic search and machine learning models easy to run and consume. What if you don't want to introduce another dependency and want to run this inside Drupal? This is where this presentation comes in."
 
-Audience framing: assume zero prior exposure. This room may include people who know Drupal deeply but have never seen a semantic search demo, and some non-technical attendees. Don't assume anyone read an earlier blog post or saw a prior talk — the next several slides rebuild the concept from scratch before anything Drupal-specific shows up.
+Audience framing: assume zero prior exposure. This room may include people who know Drupal deeply but have never seen a semantic search demo, and some non-technical attendees. Don't assume anyone read an earlier blog post or saw a prior talk. The next several slides rebuild the concept from scratch before anything Drupal-specific shows up.
 
 Platform adaptation: if presenting over Teams/Zoom instead of in-room, paste the repo link in chat at this point rather than relying on the QR code.
 -->
@@ -269,7 +269,7 @@ A user wants to find "how many GPs we have."
 <!-- note:
 Universal in any content-heavy site with specialist vocabulary: a Drupal knowledge base, an intranet, a product catalogue, a policy library.
 
-Don't answer the rhetorical. Let the room think of their own version — a wiki page, a form name, a policy document they've hunted for themselves.
+Don't answer the rhetorical. Let the room think of their own version: a wiki page, a form name, a policy document they've hunted for themselves.
 
 Non-technical framing: no jargon yet. This is a problem everyone in the room has lived, technical or not.
 -->
@@ -301,7 +301,7 @@ Rung 3 (Solr/OpenSearch + synonyms): the synonym list is a bag of intent someone
 
 Rung 4 is OOTB embeddings (machine representation of meaning, series of numbers), we will demo fine-tuned (improved) version of Rung 4. I will explain how fine-tuning works later.
 
-Definition callout if the room needs it: "Solr" / "OpenSearch" — a dedicated search engine service some Drupal sites index content into, separate from the database.
+Definition callout if the room needs it: "Solr" / "OpenSearch": a dedicated search engine service some Drupal sites index content into, separate from the database.
 -->
 
 ---
@@ -310,10 +310,10 @@ Definition callout if the room needs it: "Solr" / "OpenSearch" — a dedicated s
 
 That's the general shape of the problem and the fix. Here's where Drupal sits today:
 
-- **AI Search + Ollama** — a sidecar service, 5 to 15 GB RAM
-- **AI Search / Semantic Search + OpenAI** — external API call per query, a key to manage, per-query cost
-- **Search API Embeddings** — in-process, but Word2Vec, 2013-era tech
-- **Scolta** (new, Aug 2026) — client-side lexical index + LLM query rewriting, not embeddings
+- **AI Search + Ollama**: a sidecar service, 5 to 15 GB RAM
+- **AI Search / Semantic Search + OpenAI**: external API call per query, a key to manage, per-query cost
+- **Search API Embeddings**: in-process, but Word2Vec, 2013-era tech
+- **Scolta** (new, Aug 2026): client-side lexical index + LLM query rewriting, not embeddings
 
 <br/>
 
@@ -361,7 +361,7 @@ Keyword vs Semantic, Running Inside Drupal
 2. Keyword mode (?mode=keyword): type "primary care doctor staffing levels" => "No matches found"
 3. Switch to semantic mode, same query => "GP FTE" surfaces, single best match
 4. Click through => navigates to the report, scrolls, fades highlight
-5. Optional: show /admin/modules with Auto Search enabled — "this is a real module, not a bolt-on"
+5. Optional: show /admin/modules with Auto Search enabled: "this is a real module, not a bolt-on"
 
 Platform adaptation: if the venue wifi is unreliable, this entire demo is local Docker, no internet dependency. Say so up front; it's a feature of the architecture, not a caveat.
 
@@ -400,7 +400,7 @@ prompt = (
   f"Description: {item.get('description', '')}\n\n"
   f"Generate 10 diverse natural-language queries a health "
   f"workforce planner might type to find this item. Include "
-  f"acronym expansions, synonyms, colloquial phrasings."
+  f"synonyms, colloquial phrasings, and different specificity levels."
 )
 ```
 
@@ -424,10 +424,12 @@ Non-technical framing: don't dwell on the loss function name. The point that lan
 | bge-small-en-v1.5 (OOTB, larger) | 133 MB | 0.800 | 0.850 |
 | **all-MiniLM-L6-v2 fine-tuned (INT8 ONNX)** | **22 MB** | **0.850** | **0.908** |
 
-**Roughly 1/6th the size of bge-small, and still more accurate.**
+**More accurate than the larger model.**
 
-<div class="def"><strong>Recall@1</strong> — how often the correct item is the very top result. 0.85 means 85 times out of 100.</div>
-<div class="def"><strong>MRR@5</strong> — Mean Reciprocal Rank across the top 5 results. Rewards a correct answer even if it isn't first: rank 2 scores 0.5, rank 3 scores 0.33.</div>
+<div class="def"><strong>Recall@1</strong>: how often the correct item is the very top result. 0.85 means 85 times out of 100.</div>
+<div class="def"><strong>MRR@5</strong>: Mean Reciprocal Rank across the top 5 results. Rewards a correct answer even if it isn't first: rank 2 scores 0.5, rank 3 scores 0.33.</div>
+
+<div class="note">Directional secondary-set result (n=20); the larger LLM holdout (n=1182) confirms the same ranking.</div>
 
 <!-- note:
 Same model, same numbers as the JVM version, nothing about the Drupal port changes accuracy, only where it runs.
@@ -445,13 +447,13 @@ n=20 on the secondary set, directional only, not statistically significant on it
 
 ![w:1200](diagrams/drupal-runtime-flow.svg)
 
-The Vue frontend is unchanged. Everything new is in the PHP module.
+No new frontend logic. Three small compatibility tweaks aside, everything new is in the PHP module.
 
-<div class="def"><strong>ONNX</strong> — Open Neural Network Exchange. A portable model format; the same file runs in Java, Python or PHP.</div>
-<div class="def"><strong>FFI</strong> — Foreign Function Interface. Lets PHP call native C++ code directly, no network involved. That's how the box labelled "PHP FFI" in the diagram talks to the ONNX model.</div>
+<div class="def"><strong>ONNX</strong>: Open Neural Network Exchange. A portable model format; the same file runs in Java, Python or PHP.</div>
+<div class="def"><strong>FFI</strong>: Foreign Function Interface. Lets PHP call native C++ code directly, no network involved. That's how the box labelled "PHP FFI" in the diagram talks to the ONNX model.</div>
 
 <!-- note:
-[deep] slide, signpost verbally: "this one's for the people who want the mechanism, feel free to zone out for 90 seconds if you just want the shape of it."
+[deep] slide, signpost verbally: "this one's for the people who want the mechanism. The next 90 seconds are skippable if you just want the shape of it."
 
 The Vue SPA is served as a Drupal library, the same pattern as an earlier Vue.js-in-Drupal talk to this group. Nothing changed there. If nobody in the room saw that talk, this is just "the frontend is a normal Drupal library, nothing special."
 
@@ -498,8 +500,8 @@ If you are deploying this to Production:
 
 | | Self-hosted / GovCMS PaaS | GovCMS SaaS |
 |---|---|---|
-| Custom modules at all | Yes, agency controls the container | Not permitted — approved module set only |
-| `libonnxruntime.so` | Install it, same as self-hosted | Moot — custom code isn't an option here |
+| Custom modules at all | Yes, agency controls the container | Not permitted, approved module set only |
+| `libonnxruntime.so` | Install it, same as self-hosted | Moot, custom code isn't an option here |
 
 <!-- note:
 Correction worth knowing before this slide is delivered: SaaS and PaaS are genuinely different services, not two flavours of the same constraint. SaaS is fully managed with a fixed approved module and theme set, no custom code, full stop, regardless of what that code does. PaaS runs on Lagoon/Kubernetes and the agency owns its own Docker image, exactly the same model as tonight's local demo, so libonnxruntime.so is exactly as available there as it is self-hosted.
@@ -543,17 +545,18 @@ If asked about swapping in a different corpus: corpus.json and the model artefac
 <br/>
 
 Thank you
-Feedback and questions: DM via LinkedIn
-Code: github.com/cchew/auto-search (drupal branch)
+
+Questions: DM via LinkedIn
+Code: github.com/cchew/auto-search (drupal branch), clone it and run it tonight
 
 <!-- note:
 Land the takeaway: search is a UX problem dressed up as an ML problem. Solve the vocabulary mismatch and the rest is a for-loop, in PHP just as much as in Java.
 
 Open Q&A. Likely questions:
-- "Does this work on Drupal 11?" — yes, info.yml declares ^10 || ^11
-- "What about content types beyond a flat corpus?" — corpus.json is the interface; anything that flattens to items with a name/description works today, entity-aware indexing is future work
-- "Why not just use Scolta?" — different problem: Scolta rewrites queries against a lexical index; this does real semantic similarity. Use Scolta if you want zero infra and can live with lexical search; use this if you need the model to actually understand domain vocabulary.
-- "Why not RAG?" — different problem, retrieval is one part of RAG, this is just retrieval.
+- "Does this work on Drupal 11?" Yes, info.yml declares ^10 || ^11
+- "What about content types beyond a flat corpus?" Corpus.json is the interface; anything that flattens to items with a name/description works today, entity-aware indexing is future work
+- "Why not just use Scolta?" Different problem: Scolta rewrites queries against a lexical index; this does real semantic similarity. Use Scolta if you want zero infra and can live with lexical search; use this if you need the model to actually understand domain vocabulary.
+- "Why not RAG?" Different problem: retrieval is one part of RAG; this is just retrieval.
 - Cost? ~30c training on Haiku, $0 per query.
 
 Platform adaptation: if this is presented again internally (Teams), swap "DM via LinkedIn" for a Teams handle and swap the GitHub CTA for an ADO Wiki link to the internal build notes.
@@ -564,13 +567,13 @@ Platform adaptation: if this is presented again internally (Teams), swap "DM via
 <!-- _class: appendix -->
 <!-- _paginate: false -->
 
-## Appendix A — Production Considerations
+## Appendix A: Production Considerations
 
 **Not yet built (honest gap list)**
-- Config schema (`config/schema/autosearch.schema.yml`) — required before any settings form
-- Scoped permission on the search endpoint — all routes currently `_access: 'TRUE'` for the demo
-- Uninstall hook — cleans up generated proxy classes and cached embeddings
-- CSRF protection on `POST /api/v1/search` — fine for anonymous read-only demo, not for writes
+- Config schema (`config/schema/autosearch.schema.yml`): required before any settings form
+- Scoped permission on the search endpoint: all routes currently `_access: 'TRUE'` for the demo
+- Uninstall hook: cleans up generated proxy classes and cached embeddings
+- CSRF protection on `POST /api/v1/search`: fine for anonymous read-only demo, not for writes
 
 **Ops surface**
 - One Drupal module. Model loads lazily on first search request, not every page load
@@ -586,7 +589,7 @@ Cover only if asked. This is the "what would you still need to do before product
 <!-- _class: appendix -->
 <!-- _paginate: false -->
 
-## Appendix B — Tech Stack
+## Appendix B: Tech Stack
 
 **Drupal module (PHP)**
 - PHP 8.3, Drupal 10/11
@@ -611,11 +614,11 @@ Tech stack on request. The point to land if asked: nothing about the model or tr
 <!-- _class: appendix -->
 <!-- _paginate: false -->
 
-## Appendix C — Lessons Learnt
+## Appendix C: Lessons Learnt
 
-- **FFI and `intl` extensions aren't compiled in by default** — bites on managed PHP images without root access to the build
-- **Lazy service proxies break constructor type hints** — Drupal's generated proxies don't extend the concrete class; type the constructor as `object`
-- **MariaDB 10.11 requires SSL by default** — `mysqladmin` and `pdo_mysql` both fail until `--skip-ssl` is set explicitly
+- **FFI and `intl` extensions aren't compiled in by default**: bites on managed PHP images without root access to the build
+- **Lazy service proxies break constructor type hints**: Drupal's generated proxies don't extend the concrete class; type the constructor as `object`
+- **MariaDB 10.11 requires SSL by default**: `mysqladmin` and `pdo_mysql` both fail until `--skip-ssl` is set explicitly
 
 <!-- note:
 Cover only if asked, or if there's time to spare, these are the three that would waste someone a full afternoon if they hit them cold.
