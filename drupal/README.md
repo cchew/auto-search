@@ -10,12 +10,16 @@ Mirrors the Auto Search Spring Boot REST contract so the existing Vue SPA works 
 
 ## Quick Start
 
-**Step 1 — copy model artefacts**
+**Step 1 — get model artefacts**
 
 ```bash
 cd drupal
 bash setup-model.sh it-service-catalogue
 ```
+
+`output/` (the trained model + embeddings) is gitignored. If you've run the training
+pipeline yourself it copies from there; on a fresh clone it downloads a pretrained
+copy of the bundled corpus from this repo's [GitHub Release](https://github.com/cchew/auto-search/releases/tag/drupal-demo-assets-v1) instead. Either way, this step is automatic.
 
 **Step 2 — build and start**
 
@@ -112,14 +116,21 @@ User query
   → JSON response
 ```
 
-No network hop. No sidecar. The model (~22 MB INT8) loads once at first request.
+No network hop. No sidecar. The model (~22 MB INT8) is a fixed, in-repo file, but
+under stock `mod_php` (share-nothing per request) it is re-read from disk and the
+ONNX session rebuilt on every request that hits a fresh worker; `lazy: true` only
+defers that cost to the first search request, it does not keep the model resident
+across requests. No PHP-path latency numbers exist yet — that is the next thing to
+measure before calling this production-ready.
 
 ### GovCMS / managed hosting note
 
 `ankane/onnxruntime-php` requires `libonnxruntime.so` on the server. On self-hosted
-Drupal (EC2, VPS, on-prem) it installs in one line. On GovCMS SaaS it is not
-available — use a thin Python FastAPI sidecar serving only the `/embed` endpoint
-instead (still far lighter than Ollama: 22 MB vs multi-GB).
+Drupal or GovCMS PaaS (agency-owned Docker image) it installs in one line. GovCMS
+SaaS doesn't permit custom code outside its shared, security-reviewed module
+distribution at all, so neither this module nor a FastAPI sidecar workaround has a
+realistic path there, that's a SaaS constraint on any bespoke code, not specific to
+ONNX.
 
 ---
 
@@ -129,7 +140,7 @@ instead (still far lighter than Ollama: 22 MB vs multi-GB).
 drupal/
 ├── Dockerfile.php          — PHP 8.3 + ONNX Runtime + intl
 ├── docker-compose.yml      — Drupal 10 + MariaDB
-├── setup-model.sh          — copy artefacts from repo/output/
+├── setup-model.sh          — copy artefacts from repo/output/, or fetch from GitHub Release if absent
 ├── modules/autosearch/
 │   ├── autosearch.info.yml
 │   ├── autosearch.routing.yml

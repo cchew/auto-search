@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Copy model artefacts from the Java build output into the Drupal module.
-# Run once after training a new model, then rebuild the Docker image.
+# If you haven't run the training pipeline yourself, downloads a pretrained
+# copy from the repo's GitHub Release instead (fresh-clone / demo path).
 #
 # Usage: bash setup-model.sh <corpus>
 #   corpus: it-service-catalogue (default) | health-workforce
@@ -11,8 +12,21 @@ CORPUS="${1:-it-service-catalogue}"
 REPO_OUTPUT="../output/${CORPUS}/artefacts"
 EXAMPLES="../examples/${CORPUS}"
 DEST="modules/autosearch/model"
+RELEASE_TAG="drupal-demo-assets-v1"
+RELEASE_URL="https://github.com/cchew/auto-search/releases/download/${RELEASE_TAG}/autosearch-model-${CORPUS}.tar.gz"
 
 mkdir -p "$DEST"
+
+if [ ! -f "${REPO_OUTPUT}/autosearch-embed.onnx" ]; then
+  echo "No local ../output/${CORPUS} found (expected on a fresh clone, output/ is gitignored)."
+  echo "Downloading pretrained model + embeddings for '${CORPUS}' from the GitHub Release..."
+  TMP_DOWNLOAD="$(mktemp -d)"
+  curl -fL "$RELEASE_URL" -o "$TMP_DOWNLOAD/model.tar.gz"
+  mkdir -p ../output
+  tar -xzf "$TMP_DOWNLOAD/model.tar.gz" -C ../output
+  rm -rf "$TMP_DOWNLOAD"
+  echo "Downloaded to ../output/${CORPUS}/"
+fi
 
 echo "Copying model artefacts from $REPO_OUTPUT"
 cp "${REPO_OUTPUT}/autosearch-embed.onnx"  "$DEST/autosearch-embed.onnx"
