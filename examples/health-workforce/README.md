@@ -26,11 +26,11 @@ autosearch evaluate \
 
 | File | Purpose |
 |---|---|
-| `corpus.json` | 350 health workforce items (synthetic). Generated from `extract_corpus.sql` for a reference run, or used as-is for local proof. |
+| `corpus.json` | 350 health workforce items (synthetic). Shipped ready to use for local proof; `extract_corpus.sql` shows the query shape if you build one from a relational source. |
 | `corpus-ui.json` | Frontend UI labels (title, lede, suggestions, group names) shipped with this example so the repo proves portability without re-running `autosearch ui-config`. |
 | `config.yaml` | Field name mapping and pipeline settings for this domain (`item_id`, `wpp_id`, `name`, `description`). |
 | `test-queries.json` | Evaluation queries for benchmarking model quality against this corpus. |
-| `extract_corpus.sql` | Oracle SQL to extract a fresh `corpus.json` from the a relational source schema. Run in SQL Developer; export result as `corpus.json` (JSON Array format). |
+| `extract_corpus.sql` | Illustrative SQL showing the shape of query used to build `corpus.json` from a relational source. Export the result as a JSON array. |
 
 ## Adapting to your own domain
 
