@@ -219,10 +219,10 @@ section.appendix h2 {
 <!-- _class: lead -->
 <!-- _paginate: false -->
 
-# A Model With No Business Running Here
+# Semantic Search inside Drupal
 
 <br/>
-Semantic search inside a Drupal module. No sidecar, APIs or new software.
+Running a fine-tuned model in a Drupal module. No sidecar, APIs or new software.
 
 Ching Chew · September 2026
 
@@ -231,13 +231,11 @@ Ching Chew · September 2026
 ![w:200](screenshots/qr-drupal.png)
 
 <!-- note:
-Pre-show: Docker demo running locally, http://localhost:8080/autosearch open in 2 tabs (keyword mode ready via ?mode=keyword with second regular one). Third tab on the GitHub repo (drupal branch) for the QR code.
+"Hi everyone! Thank you for the opportunity to speak with you about a topic that I am passionate about: to help users find what they are looking for. The ability to understand the user's meaning, context and intent behind a search, not just the keywords used, is semantic search."
 
-"Cloud hosting and APIs make semantic search and machine learning models easy to run and consume. What if you don't want to introduce another dependency and want to run this inside Drupal? This is where this presentation comes in."
+"Cloud hosting and APIs make semantic search easy to run and consume. You can also install various software and tools if you host inhouse. What if you don't want to introduce another dependency and want to run this inside Drupal? This is where this presentation comes in."
 
-Audience framing: assume zero prior exposure. This room may include people who know Drupal deeply but have never seen a semantic search demo, and some non-technical attendees. Don't assume anyone read an earlier blog post or saw a prior talk. The next several slides rebuild the concept from scratch before anything Drupal-specific shows up.
-
-Platform adaptation: if presenting over Teams/Zoom instead of in-room, paste the repo link in chat at this point rather than relying on the QR code.
+"Before we start, the QR code is to the GitHub repo. Link also on the last slide. Just a note on code: it is in the `drupal` branch, and builds on the Vue on Drupal talk that I did last year so if you are wanting to unpack that further, I have a blog post and GitHub repo for it."
 -->
 
 ---
@@ -248,8 +246,6 @@ Platform adaptation: if presenting over Teams/Zoom instead of in-room, paste the
 "Hands up if anyone here experienced frustration with search: especially trying to find something you are sure exists in the system?"
 
 "No imagine this frustration in your user base, using your website or application."
-
-Non-technical framing: this slide is a feeling, not an explanation. Do not explain tokens, indexing or search internals yet. The explanation builds over the next few slides.
 -->
 
 ---
@@ -267,11 +263,9 @@ A user wants to find "how many GPs we have."
 **Search matches names. Users might know it as something else.**
 
 <!-- note:
-Universal in any content-heavy site with specialist vocabulary: a Drupal knowledge base, an intranet, a product catalogue, a policy library.
+"I see search failures (outside of technical or code problems) when there is a mental model mismatch between the user and the developer of the search tool."
 
-Don't answer the rhetorical. Let the room think of their own version: a wiki page, a form name, a policy document they've hunted for themselves.
-
-Non-technical framing: no jargon yet. This is a problem everyone in the room has lived, technical or not.
+Trousers vs pants.
 -->
 
 ---
@@ -280,10 +274,7 @@ Non-technical framing: no jargon yet. This is a problem everyone in the room has
 ![bg contain](screenshots/drupal-semantic-hit.png)
 
 <!-- note:
-Full-bleed split. No narration needed, let the room read it.
 "Same query. Same Drupal module. Different search."
-
-This is the destination. Everything between here and the live demo explains how we got there.
 -->
 
 ---
@@ -295,11 +286,15 @@ This is the destination. Everything between here and the live demo explains how 
 Each rung buys recall. None solve vocabulary mismatch.
 
 <!-- note:
-Walk the ladder briefly. Most Drupal sites sit at rung 2 or 3 (core search, or Search API with an index).
+"The first step is like a SQL 'LIKE' query where you are matching on the search phrase. If you have a typo or use different terms, you won't get a result."
 
-Rung 3 (Solr/OpenSearch + synonyms): the synonym list is a bag of intent someone has to maintain forever. Every new acronym is a config change.
+"The second step is where you do some NL processing: tokenise to 3-4 characters, stem to base word etc to hopefully return some more results to users."
 
-Rung 4 is OOTB embeddings (machine representation of meaning, series of numbers), we will demo fine-tuned (improved) version of Rung 4. I will explain how fine-tuning works later.
+Rung 3 (Solr/OpenSearch + synonyms): you might source synonyms from your site analytics or logs, to address search terms that don't return the results you want users to see. The synonym list is a bag of intent someone has to maintain forever.
+
+Rung 4 is OOTB embeddings (aka vectors, machine representation of meaning, series of numbers, longer numbers or more dimensions mean more naunce), we will demo fine-tuned (improved) version of Rung 4. I will explain how fine-tuning works later.
+
+Swap to browser tab with embedding diagram.
 
 Definition callout if the room needs it: "Solr" / "OpenSearch": a dedicated search engine service some Drupal sites index content into, separate from the database.
 -->
@@ -317,21 +312,21 @@ That's the general shape of the problem and the fix. Here's where Drupal sits to
 
 <br/>
 
-**Every path is a sidecar, a call, or not actually semantic.**
+**Every option is a sidecar, an API call, or not a modern embedding model.**
 
 <!-- note:
-Scan slide, list not deep technical content. Move at pace.
+Scan slide. Move at pace.
 
-Scolta needs one sentence of respect, not dismissal: same instinct (no search server), different mechanism (lexical index in the browser, not vector embeddings). If someone in the room has tried Scolta, this is the moment they'll raise a hand, welcome it, it's a genuine adjacent tool.
+Ollama is like Docker for language models. Install on laptop or server and you can try different language models, including embedding models.
 
-Exec framing: this is the "why doesn't this already exist" slide. Point at RAM cost and per-query billing as the two numbers that matter for a budget conversation.
+Scolta: lexical index in the browser, not vector embeddings.
 -->
 
 ---
 
 ## The Actual Gap
 
-Nobody in the Drupal ecosystem runs the embedding model inside the PHP process itself.
+Nobody in the Drupal ecosystem runs a modern transformer embedding model inside the PHP process.
 
 - An INT8-quantised, fine-tuned `all-MiniLM-L6-v2` is ~22 MB
 - That is small enough to load once, in-process, on first request
@@ -342,9 +337,11 @@ Nobody in the Drupal ecosystem runs the embedding model inside the PHP process i
 **This is what that looks like.**
 
 <!-- note:
-This is the "so what" slide, land it clearly, then go straight into the demo. Exec audience: this is the moment to say "no new service to procure, no new SLA to negotiate."
+"Quantisation is process of reducing the precision of weights and activation functions in a neural network to reduce the size of language models."
 
-Peer audience: the size number (22 MB) is doing the work here, it's smaller than most people's mental model of "a machine learning model."
+"no new service to procure, no new SLA to negotiate."
+
+22 MB is smaller than most people's mental model of "a machine learning model."
 -->
 
 ---
@@ -381,37 +378,28 @@ They do not know "GP FTE" means "general practitioner full-time equivalent" in a
 **That is what fine-tuning fixes.**
 
 <!-- note:
-Domain vocabulary is the reason for everything that follows in this talk: the tokenizer port, the FFI wiring, all of it exists to run a fine-tuned model, not a generic one.
-
-OOTB MiniLM: Recall@1 = 0.75. OOTB bge-small (larger model): Recall@1 = 0.80. Both miss one query in five, and the misses cluster on exactly the domain-specific phrasings that matter most.
-
-Fine-tuning teaches the model the vocabulary. Full eval numbers are in the JVM write-up for anyone who wants to go deeper afterwards: herdmentality.xyz/blog/auto-search.
+"If vocabulary mismatch is the cause of bad search experience, fine-tuning teaches the model your custom vocabulary. Again, this is especially important when you have specialised domain or a range of user types."
 -->
 
 ---
 
-## Synthetic Pairs from Claude
+## The Training Pipeline
 
-No human labelled "golden dataset" exists, so we generate one from an LLM.
+![w:1200](diagrams/pipeline-offline.svg)
 
-```python
-prompt = (
-  f"Data item:\nName: {item['name']}\n"
-  f"Description: {item.get('description', '')}\n\n"
-  f"Generate 10 diverse natural-language queries a health "
-  f"workforce planner might type to find this item. Include "
-  f"synonyms, colloquial phrasings, and different specificity levels."
-)
-```
-
-~5,900 pairs across 350 items (re-runs accumulate). ~30c on Haiku.
+Usually you have human-labelled data. I didn't, so I got Claude to write ~10 query/item pairs for each of 350 items, ~5,900 total after re-runs. ~30c on Haiku.
 
 <!-- note:
-The unglamorous bit that made it work, and the same pipeline as the JVM version. Worth saying out loud: "the training side didn't change at all when this got ported to PHP, only the runtime did."
+"This demo started with a Java backend. The training side didn't change at all when this got ported to PHP, only the runtime did. You can run ONNX models on different programming languages."
 
-Loss function for anyone technical: MultipleNegativesRankingLoss, every other item in the batch acts as an implicit negative. Batch size 32, three epochs.
+Walk the boxes left to right at pace:
+- generate_pairs.py: one Claude call per item, 10 natural-language queries each ("how many FTE GPs do we have" against the item "GP FTE").
+- train.py: sentence-transformers fine-tune. Loss for anyone technical: MultipleNegativesRankingLoss, every other item in the batch is an implicit negative. Batch 32, three epochs.
+- export_onnx.py: ONNX export + INT8 quantise, this is where the 22 MB file comes from.
+- precompute_embeddings.py: embed every corpus item once. Delta-aware via a content-hash manifest, only new or changed items get re-done.
+- Output ships as a GitHub release; setup-model.sh fetches it on a fresh clone.
 
-Non-technical framing: don't dwell on the loss function name. The point that lands is "we used one AI model to generate the training examples for a different, much smaller AI model."
+Non-technical framing: "we used one big AI model to generate the training examples for a different, much smaller AI model." Don't dwell on the loss function name.
 -->
 
 ---
@@ -429,10 +417,12 @@ Non-technical framing: don't dwell on the loss function name. The point that lan
 <div class="def"><strong>Recall@1</strong>: how often the correct item is the very top result. 0.85 means 85 times out of 100.</div>
 <div class="def"><strong>MRR@5</strong>: Mean Reciprocal Rank across the top 5 results. Rewards a correct answer even if it isn't first: rank 2 scores 0.5, rank 3 scores 0.33.</div>
 
-<div class="note">Directional secondary-set result (n=20); the larger LLM holdout (n=1182) confirms the same ranking.</div>
+<div class="note">Headline column is the n=20 keyword-style set; the n=1182 LLM holdout shows the same ordering.</div>
 
 <!-- note:
-Same model, same numbers as the JVM version, nothing about the Drupal port changes accuracy, only where it runs.
+Same model, same numbers as the JVM version, nothing about the Drupal port changes accuracy, only where it runs. Fine-tuned model performs between than larger model, which is expected since it is more specialised to the domain.
+
+--- 
 
 Two test sets, both synthetic. LLM holdout (0.93) vs a smaller secondary set (0.85) with shorter, keyword-style queries. The gap is what the model learned about Claude's verbose phrasing vs terser phrasings. Logged queries from a live deployment would be the strongest signal but don't exist yet.
 
@@ -447,17 +437,19 @@ n=20 on the secondary set, directional only, not statistically significant on it
 
 ![w:1200](diagrams/drupal-runtime-flow.svg)
 
-No new frontend logic. Three small compatibility tweaks aside, everything new is in the PHP module.
+No new frontend logic apart from three small Drupal compatibility tweaks. Everything new is in the PHP module.
 
 <div class="def"><strong>ONNX</strong>: Open Neural Network Exchange. A portable model format; the same file runs in Java, Python or PHP.</div>
-<div class="def"><strong>FFI</strong>: Foreign Function Interface. Lets PHP call native C++ code directly, no network involved. That's how the box labelled "PHP FFI" in the diagram talks to the ONNX model.</div>
+<div class="def"><strong>FFI</strong>: Foreign Function Interface. Lets PHP call native C++ code directly, no network involved.</div>
 
 <!-- note:
-[deep] slide, signpost verbally: "this one's for the people who want the mechanism. The next 90 seconds are skippable if you just want the shape of it."
+[deep] slide.
 
-The Vue SPA is served as a Drupal library, the same pattern as an earlier Vue.js-in-Drupal talk to this group. Nothing changed there. If nobody in the room saw that talk, this is just "the frontend is a normal Drupal library, nothing special."
+"So how does the fine-tuned model fit into the solution?""
 
-Exec framing: point at the box labelled "Drupal 10 module (single PHP process)", this is the entire new deployment surface. One module, no new infrastructure.
+"The Vue SPA is served as a Drupal library, the same pattern as an earlier Vue.js-in-Drupal talk to this group."
+
+"The UI calls an API exposed by the custom Drupal module. It runs a tokeniser to pre-process the input, generate an embedding for the search input then finds the most similar results."
 -->
 
 ---
@@ -465,31 +457,31 @@ Exec framing: point at the box labelled "Drupal 10 module (single PHP process)",
 ## Code Walk
 
 ```php
-public function encode(string $text): array {
-  $normalized = $this->normalize($text);
-  $words = $this->preTokenize($normalized);
-  $ids = [self::CLS_ID];
-  foreach ($words as $word) {
-    foreach ($this->wordPiece($word) as $id) {
-      $ids[] = $id;
-      if (count($ids) >= self::MAX_LENGTH - 1) break 2;
-    }
-  }
-  $ids[] = self::SEP_ID;
-  return ['input_ids' => $ids, ...];
+public function search(Request $request): JsonResponse {
+  $body  = json_decode($request->getContent(), TRUE);
+  $query = trim((string) ($body['query'] ?? ''));
+  $topK  = max(1, min(20, (int) ($body['topK'] ?? 5)));
+
+  $vec     = $this->embedding->embed($query);        // ONNX inference, in-process
+  $results = $this->similarity->search($vec, $topK); // cosine vs in-memory vectors
+
+  return new JsonResponse($results);
 }
 ```
 
-Hand-ported WordPiece tokenizer. PHP has no HuggingFace Tokenizers equivalent.
+The whole search path: embed the query, score it against vectors already in memory, return the top matches. The hard part was upstream: PHP has no HuggingFace Tokenizers equivalent, so the WordPiece tokenizer feeding `embed()` is a hand port, validated token-for-token against the Java and Python versions.
 
 <!-- note:
-[deep] slide, pairs with the previous one.
+[deep] slide.
 
-This is the highest-risk piece of the whole port, validated token-for-token against the Java and Python implementations before trusting it near the model.
+"2 main things: we embed the query then calculate similarity to candidates. You can make it more fancy: sanitise search terms, sanitise results etc."
 
-Peer question likely to come up: "why not just call out to a Python sidecar for tokenization?" Answer: that reintroduces exactly the sidecar dependency the whole talk argues against. If you're going to run the model in-process, the tokenizer has to be in-process too.
+---
+The hand-ported tokenizer was the highest-risk piece of the whole port. Detail if asked: no HuggingFace Tokenizers equivalent in PHP, so normalize -> pre-tokenize -> WordPiece -> CLS/SEP was rewritten by hand and checked token-for-token against the Java and Python implementations before trusting it near the model.
 
-Second code block available if there's time/interest: EmbeddingService::embed() showing the FFI call into ankane/onnxruntime-php and the mean-pool/L2-normalise step, identical logic to the Java version.
+Peer question likely to come up: "why not call out to a Python sidecar for tokenization?" Answer: that reintroduces exactly the sidecar dependency the whole talk argues against. Model in-process means tokenizer in-process too.
+
+EmbeddingService::embed() itself: FFI call into ankane/onnxruntime-php, then mean-pool and L2-normalise, identical logic to the Java version. Show it only if there's time and appetite.
 -->
 
 ---
@@ -504,9 +496,10 @@ If you are deploying this to Production:
 | `libonnxruntime.so` | Install it, same as self-hosted | Moot, custom code isn't an option here |
 
 <!-- note:
-Correction worth knowing before this slide is delivered: SaaS and PaaS are genuinely different services, not two flavours of the same constraint. SaaS is fully managed with a fixed approved module and theme set, no custom code, full stop, regardless of what that code does. PaaS runs on Lagoon/Kubernetes and the agency owns its own Docker image, exactly the same model as tonight's local demo, so libonnxruntime.so is exactly as available there as it is self-hosted.
+"Probably no surprise to this audience: can only do this on self-hosted or PaaS."
 
-This is the honest-caveat slide, do not skip or soften it. Strong GovCMS contingent in this room; naming SaaS's real constraint (no custom code at all) lands better than an ONNX-specific workaround that doesn't reflect how SaaS actually works.
+---
+SaaS and PaaS are genuinely different services, not two flavours of the same constraint. SaaS is fully managed with a fixed approved module and theme set, no custom code, full stop, regardless of what that code does. PaaS runs on Lagoon/Kubernetes and the agency owns its own Docker image, exactly the same model as tonight's local demo, so libonnxruntime.so is exactly as available there as it is self-hosted.
 
 Exec framing: the answer to "can my team actually run this" is "yes, if you're on PaaS or self-hosted; no, if you're on SaaS, and that's true of any custom module, not just this one."
 -->
@@ -525,21 +518,23 @@ docker compose up --build
 Then open `localhost:8080/autosearch`.
 
 <!-- note:
-Most student-friendly and recruiter-friendly slide in the deck, say the URL out loud, don't just show it.
+Say the URL out loud.
 
-If asked about swapping in a different corpus: corpus.json and the model artefacts are the only things that change; setup-model.sh takes any corpus name matching a folder under examples/.
+"It comes with 2 pre-built domains: health workforce data and IT service catalog. You can swap it: setup-model.sh takes any corpus name matching a folder under examples/"
+
+"You can also use your own domain: human label `corpus.json` or ask your favourite LLM to generate."
 -->
 
 ---
 
 ## Conclusion
 
-"The user does not care which rung of the ladder you used. They care that the search worked."
+"The user does not care what you use for search. They care that the search worked."
 
 <br/>
 
 - Most search problems are vocabulary problems
-- Fine-tuned small models beat off-the-shelf large models on domain tasks
+- Fine-tuned small models beat off-the-shelf larger models on domain tasks
 - The infrastructure can stay boring
 
 <br/>
@@ -550,16 +545,15 @@ Questions: DM via LinkedIn
 Code: github.com/cchew/auto-search (drupal branch), clone it and run it tonight
 
 <!-- note:
-Land the takeaway: search is a UX problem dressed up as an ML problem. Solve the vocabulary mismatch and the rest is a for-loop, in PHP just as much as in Java.
+"Congratulations on surviving quite an intense presentation: embedding models, technical terms like ONNIX/FFI, ML concepts like fine tuning/recall. Hope you take away some ideas of how to solve the vocabulary mismatch search problem, without the need to introduce a new dependency or installing new server software."
+
+"Thank you again for the opportunity and being an amazing audience."
 
 Open Q&A. Likely questions:
 - "Does this work on Drupal 11?" Yes, info.yml declares ^10 || ^11
-- "What about content types beyond a flat corpus?" Corpus.json is the interface; anything that flattens to items with a name/description works today, entity-aware indexing is future work
+- "What about content types beyond a flat corpus?" Corpus.json is the interface; anything that flattens to items with a name/description works today, entity-aware indexing will need more work
 - "Why not just use Scolta?" Different problem: Scolta rewrites queries against a lexical index; this does real semantic similarity. Use Scolta if you want zero infra and can live with lexical search; use this if you need the model to actually understand domain vocabulary.
-- "Why not RAG?" Different problem: retrieval is one part of RAG; this is just retrieval.
 - Cost? ~30c training on Haiku, $0 per query.
-
-Platform adaptation: if this is presented again internally (Teams), swap "DM via LinkedIn" for a Teams handle and swap the GitHub CTA for an ADO Wiki link to the internal build notes.
 -->
 
 ---
@@ -569,7 +563,7 @@ Platform adaptation: if this is presented again internally (Teams), swap "DM via
 
 ## Appendix A: Production Considerations
 
-**Not yet built (honest gap list)**
+**Not yet built**
 - Config schema (`config/schema/autosearch.schema.yml`): required before any settings form
 - Scoped permission on the search endpoint: all routes currently `_access: 'TRUE'` for the demo
 - Uninstall hook: cleans up generated proxy classes and cached embeddings
