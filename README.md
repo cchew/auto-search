@@ -1,5 +1,7 @@
 # Auto Search
 
+_Blog posts: [Auto Search: Semantic Search Inside the JVM](https://www.herdmentality.xyz/blog/auto-search) · [ONNX-Native Fine-Tuned Semantic Search in Drupal](https://www.herdmentality.xyz/blog/auto-search-drupal)_
+
 Domain-portable semantic search for structured data item catalogues. Drop in a `corpus.json` + `config.yaml`, run the pipeline, restart the backend — the same Vue frontend serves any domain with no rebuild. UI labels (title, lede, suggestions, group names) are derived per-domain by Claude.
 
 A fine-tuned `all-MiniLM-L6-v2` (INT8 ONNX, runs in-JVM) lifts Recall@1 from 0.80 to 0.85 over the best off-the-shelf baseline on the reference 350-item health workforce planning corpus — no vector DB, no per-query model cost, no GPU.
